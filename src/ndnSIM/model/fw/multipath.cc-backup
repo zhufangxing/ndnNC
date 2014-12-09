@@ -1,0 +1,162 @@
+/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil -*- */
+/*
+ * Copyright (c) 2011 University of California, Los Angeles
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation;
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * Author:  Alexander Afanasyev <alexander.afanasyev@ucla.edu>
+ *          Ilya Moiseenko <iliamo@cs.ucla.edu>
+ * modified by zfx 2014.12.4
+ */
+
+#include "multipath.h"
+
+#include "ns3/ndn-pit.h"
+#include "ns3/ndn-pit-entry.h"
+#include "ns3/ndn-interest.h"
+#include "ns3/ndn-content-object.h"
+#include "ns3/ndn-pit.h"
+#include "ns3/ndn-fib.h"
+#include "ns3/ndn-content-store.h"
+
+#include "ns3/assert.h"
+#include "ns3/ptr.h"
+#include "ns3/log.h"
+#include "ns3/simulator.h"
+#include "ns3/boolean.h"
+#include "ns3/string.h"
+
+#include <boost/ref.hpp>
+#include <boost/foreach.hpp>
+#include <boost/lambda/lambda.hpp>
+#include <boost/lambda/bind.hpp>
+#include <boost/tuple/tuple.hpp>
+namespace ll = boost::lambda;
+
+NS_LOG_COMPONENT_DEFINE ("ndn.fw.Multipath");
+
+namespace ns3 {
+namespace ndn {
+namespace fw {
+
+NS_OBJECT_ENSURE_REGISTERED (Multipath);
+
+TypeId
+Multipath::GetTypeId (void)
+{
+  static TypeId tid = TypeId ("ns3::ndn::fw:Multipath")
+    .SetGroupName ("Ndn")
+    .SetParent<Nacks> ()
+    .AddConstructor<Multipath> ()
+    ;
+  return tid;
+}
+
+Multipath::Multipath()
+{
+}
+
+bool
+Multipath::DoPropagateInterest (Ptr<Face> inFace,
+                                     Ptr<const Interest> header,
+                                     Ptr<const Packet> origPacket,
+                                     Ptr<pit::Entry> pitEntry)
+{
+  NS_LOG_FUNCTION (this);
+  NS_ASSERT_MSG (m_pit != 0, "PIT should be aggregated with forwarding strategy");
+  
+  int propagatedCount = 0;
+  const fib::FaceMetric *metricFace_before;
+  bool Flagm = true;
+  BOOST_FOREACH (const fib::FaceMetric &metricFace, pitEntry->GetFibEntry ()->m_faces.get<fib::i_metric> ())
+    { 
+      if(Flagm) 
+	{
+	Flagm = false;
+	metricFace_before=&metricFace;
+	continue;
+	}
+      if (metricFace.GetStatus () == fib::FaceMetric::NDN_FIB_RED) break;
+      if(metricFace.GetBit()==metricFace_before->GetBit())
+	{
+	metricFace_before=&metricFace;
+	continue;
+	}
+      else 	
+	{
+	metricFace_before=&metricFace;
+      if (!TrySendOutInterest (inFace,  metricFace_before->GetFace (), header, origPacket, pitEntry))
+        {
+          continue;
+        }
+	return 1;
+	}
+    }
+      if (!TrySendOutInterest (inFace,  metricFace_before->GetFace (), header, origPacket, pitEntry));
+
+      propagatedCount++;
+
+  return propagatedCount > 0;
+
+}
+void
+Multipath::WillSatisfyPendingInterest (Ptr<Face> inFace,
+                                            Ptr<pit::Entry> pitEntry)
+{
+  if (inFace != 0)
+    {
+      // Update metric status for the incoming interface in the corresponding FIB entry
+      pitEntry->GetFibEntry ()->UpdateStatus (inFace, fib::FaceMetric::NDN_FIB_GREEN);
+    }
+
+  super::WillSatisfyPendingInterest (inFace, pitEntry);
+}
+
+void
+Multipath::WillEraseTimedOutPendingInterest (Ptr<pit::Entry> pitEntry)
+{
+  NS_LOG_DEBUG ("WillEraseTimedOutPendingInterest for " << pitEntry->GetPrefix ());
+
+  for (pit::Entry::out_container::iterator face = pitEntry->GetOutgoing ().begin ();
+       face != pitEntry->GetOutgoing ().end ();
+       face ++)
+    {
+      // NS_LOG_DEBUG ("Face: " << face->m_face);
+      pitEntry->GetFibEntry ()->UpdateStatus (face->m_face, fib::FaceMetric::NDN_FIB_YELLOW);
+    }
+
+  super::WillEraseTimedOutPendingInterest (pitEntry);
+}
+
+void
+Multipath::DidReceiveValidNack (Ptr<Face> inFace,
+                                     uint32_t nackCode,
+                                     Ptr<const Interest> header,
+                                     Ptr<const Packet> origPacket,
+                                     Ptr<pit::Entry> pitEntry)
+{
+  super::DidReceiveValidNack (inFace, nackCode, header, origPacket, pitEntry);
+
+  if (inFace != 0 &&
+      (nackCode == Interest::NACK_CONGESTION ||
+       nackCode == Interest::NACK_GIVEUP_PIT))
+    {
+      pitEntry->GetFibEntry ()->UpdateStatus (inFace, fib::FaceMetric::NDN_FIB_YELLOW);
+    }
+}
+
+
+} // namespace fw
+} // namespace ndn
+} // namespace ns3
