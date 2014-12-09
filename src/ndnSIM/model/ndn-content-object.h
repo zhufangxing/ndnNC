@@ -131,11 +131,18 @@ public:
   void
   SetFreshness (const Time &freshness);
 
+  //added by zfx
+  void
+  SetCoef (const uint32_t coef);
+
   /**
    * @brief Get freshness of the content object
    */
   Time
   GetFreshness () const;
+
+  uint32_t
+  GetCoef () const;
 
   /**
    * @brief Set "fake" signature on the content object
@@ -166,6 +173,7 @@ public:
 private:
   Ptr<Name> m_name;
   Time m_freshness;
+  uint32_t m_coef;
   Time m_timestamp;
   uint32_t m_signature; // 0, means no signature, any other value application dependent (not a real signature)
 };

@@ -93,10 +93,24 @@ ContentObject::SetFreshness (const Time &freshness)
   m_freshness = freshness;
 }
 
+//added by zfx
+void
+ContentObject::SetCoef (const uint32_t coef)
+{
+  m_coef = coef;
+}
+
 Time
 ContentObject::GetFreshness () const
 {
   return m_freshness;
+}
+
+//added by zfx
+uint32_t
+ContentObject::GetCoef () const
+{
+  return m_coef;
 }
 
 void
@@ -114,7 +128,7 @@ ContentObject::GetSignature () const
 uint32_t
 ContentObject::GetSerializedSize () const
 {
-  uint32_t size = 2 + ((2 + 2) + (m_name->GetSerializedSize ()) + (2 + 2 + 4 + 2 + 2 + (2 + 0)));
+  uint32_t size = 2 + ((2 + 2) + (m_name->GetSerializedSize ()) + (2 + 2 + 4 + 2 + 2 + (2 + 0)    +4));//modfied by zfx
   if (m_signature != 0)
     size += 4;
   
@@ -151,6 +165,7 @@ ContentObject::Serialize (Buffer::Iterator start) const
   start.WriteU16 (4 + 2 + 2 + (2 + 0));
   start.WriteU32 (static_cast<uint32_t> (m_timestamp.ToInteger (Time::S)));
   start.WriteU16 (static_cast<uint16_t> (m_freshness.ToInteger (Time::S)));
+  start.WriteU16 (static_cast<uint32_t> (m_coef));
   start.WriteU16 (0); // reserved 
   start.WriteU16 (0); // Length (ContentInfoOptions)
 
@@ -197,6 +212,7 @@ ContentObject::Deserialize (Buffer::Iterator start)
 
   m_timestamp = Seconds (i.ReadU32 ());
   m_freshness = Seconds (i.ReadU16 ());
+  m_coef = uint32_t (i.ReadU32 ());
 
   if (i.ReadU16 () != 0) // Reserved
     throw new ContentObjectException ();

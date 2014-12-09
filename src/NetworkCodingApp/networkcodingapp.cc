@@ -111,8 +111,8 @@ void NetworkCodingApp::SendInterest ()
 void NetworkCodingApp::OnInterest (const Ptr<const ndn::InterestHeader> &interest, Ptr<Packet> origPacket)
 {
   uint32_t blocksNum=4;
-  uint32_t heap=1000;     //eg, 1, 1+heap, 1+2*heap, 1+3*heap  are coeded in a segment
-  uint32_t seqScop=blocksNum*heap;
+  //uint32_t heap=1000;     //eg, 1, 1+heap, 1+2*heap, 1+3*heap  are coeded in a segment
+  //uint32_t seqScop=blocksNum*heap;
 
 //   std::cout<<"Producer-interest:"<<interest->GetName()<<" Coef:"<<interest->GetCoef()<<std::endl;
    App::OnInterest(interest,origPacket);
@@ -141,20 +141,19 @@ void NetworkCodingApp::OnInterest (const Ptr<const ndn::InterestHeader> &interes
           block = *iter;
      }
      //added by zfx
-     uint64_t coef=interest->GetCoef();
-     uint32_t seq_base=(boost::lexical_cast<int>(seg)/seqScop)*seqScop;
-     uint32_t seq_unit=boost::lexical_cast<int>(seg)%heap;
-     uint32_t seq_t;
-//     uint32_t seqNode = 
-     UniformVariable m_rand(0,blocksNum);
-     for(uint32_t i=0, j=m_rand.GetInteger(0,blocksNum-1);i<blocksNum;i++){
-	
-	seq_t=seq_base+((i+j)%blocksNum)*heap+seq_unit;
-	if(IsCoefSame(coef,seq_t%seqScop+10)) continue;
-	break;
-	}
-     seg=boost::lexical_cast<string>(seq_t);
-
+     //uint64_t coef=interest->GetCoef();
+    // uint32_t seq_base=(boost::lexical_cast<int>(seg)/seqScop)*seqScop;
+     //uint32_t seq_unit=boost::lexical_cast<int>(seg)%heap;
+     //uint32_t seq_t;
+     uint32_t data_coef;
+     int i=0;
+     UniformVariable m_rand(0,blocksNum*2);
+     while(true && ++i!=8){
+        uint32_t j=m_rand.GetInteger(0,2*blocksNum-1);
+	data_coef = j+10;
+        if(!IsCoefSame(interest->GetCoef(),data_coef)) break;
+        }
+     //seg=boost::lexical_cast<string>(seq_t);
 
     // cout <<"媒体文件名称: " << vod << " 段号: "<< seg;
      //string randnum;
@@ -168,6 +167,7 @@ void NetworkCodingApp::OnInterest (const Ptr<const ndn::InterestHeader> &interes
         dataname = "/ndn/" + vod + "/" + nc + "/" + seg;
      data.SetName (Create<ndn::NameComponents> (dataname));
      data.SetFreshness(Seconds(0));
+     data.SetCoef(data_coef);
      static ndn::ContentObjectTail tailer; // doesn't require any configuration
      // Create packet and add header and trailer
      //unsigned char temp[1024] = "nc coef";

@@ -228,7 +228,7 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
   for(uint32_t i=0;i<blocksNum;i++){
   Ptr<Name> nameWithSequence = Create<Name> ("ndn/vod/nc");
   uint32_t  seq_t=i*heap+seq_base+seq_unit;
-  if(IsCoefSame(coef_int,seq_t%seqScop+10)) continue;
+//  if(IsCoefSame(coef_int,seq_t%seqScop+10)) continue;
 //  (*nameWithSequence) ("ndn");
 //  (*nameWithSequence) (vod);
 //  (*nameWithSequence) (nc);
@@ -249,7 +249,7 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
 
   //cs trace in Lookup, added by zfx
   boost::tie (contentObject, contentObjectHeader, payload) = m_contentStore->Lookup_nc (header, i==(blocksNum-1));
-  if (contentObject != 0 && !IsCoefSame(coef_int,GetCoef(contentObjectHeader)))
+  if (contentObject != 0 && !IsCoefSame(coef_int,contentObjectHeader->GetCoef()))
     {
       NS_ASSERT (contentObjectHeader != 0);
 
@@ -349,7 +349,7 @@ ForwardingStrategy::OnData (Ptr<Face> inFace,
 
 if(nc=="nc"){
     uint32_t seq_0=boost::lexical_cast<uint32_t>(seg);
-    uint64_t coef_data=seq_0%seqScop+10;
+    uint64_t coef_data=header->GetCoef();
     //uint32_t for_time=seq_0%4+1;
     uint32_t seq_base=(seq_0/seqScop)*seqScop;
     uint32_t seq_unit=seq_0%heap;
