@@ -111,8 +111,8 @@ void NetworkCodingApp::SendInterest ()
 void NetworkCodingApp::OnInterest (const Ptr<const ndn::InterestHeader> &interest, Ptr<Packet> origPacket)
 {
   uint32_t blocksNum=4;
-  uint32_t heap=1000;     //eg, 1, 1+heap, 1+2*heap, 1+3*heap  are coeded in a segment
-  uint32_t seqScop=blocksNum*heap;
+  //uint32_t heap=1000;     //eg, 1, 1+heap, 1+2*heap, 1+3*heap  are coeded in a segment
+  //uint32_t seqScop=blocksNum*heap;
 
 //   std::cout<<"Producer-interest:"<<interest->GetName()<<" Coef:"<<interest->GetCoef()<<std::endl;
    App::OnInterest(interest,origPacket);
@@ -153,7 +153,7 @@ void NetworkCodingApp::OnInterest (const Ptr<const ndn::InterestHeader> &interes
 	data_coef = j+10;
         if(!IsCoefSame(interest->GetCoef(),data_coef)) break;
         }
-     seg=boost::lexical_cast<string>(seq_t);
+    // seg=boost::lexical_cast<string>(seq_t);
     // cout <<"媒体文件名称: " << vod << " 段号: "<< seg;
      //string randnum;
      //stringstream ss;
