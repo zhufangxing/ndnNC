@@ -78,6 +78,7 @@ Multipath::DoPropagateInterest (Ptr<Face> inFace,
   // bool greenOk = super::DoPropagateInterest (inFace, header, origPacket, pitEntry);
   // if (greenOk)
   //   return true;
+  GetNode()->GetID();
   int propagatedCount = 0;
 
   const fib::FaceMetric *metricFace_before;
