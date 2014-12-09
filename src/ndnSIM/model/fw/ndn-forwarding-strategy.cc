@@ -224,7 +224,7 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
   uint32_t seq_base=(seq/seqScop)*seqScop;
   uint32_t seq_unit=seq%heap;
   uint64_t coef_int=header->GetCoef();
-  if(nc=="nc")
+  if(nc=="2nc")
   for(uint32_t i=0;i<blocksNum;i++){
   Ptr<Name> nameWithSequence = Create<Name> ("ndn/vod/nc");
   uint32_t  seq_t=i*heap+seq_base+seq_unit;
@@ -347,7 +347,7 @@ ForwardingStrategy::OnData (Ptr<Face> inFace,
   }
 
 
-if(nc=="nc"){
+if(nc=="2nc"){
     uint32_t seq_0=boost::lexical_cast<uint32_t>(seg);
     uint64_t coef_data=header->GetCoef();
     //uint32_t for_time=seq_0%4+1;

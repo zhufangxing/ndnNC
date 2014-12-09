@@ -9,7 +9,7 @@ def topo(filename,consumerNum):
 #       		f.write( '''ccnxGlobalRoutingHelper.AddOrigins ("/ndn/vod/nc", Node%d);\n''' % int(i*100/consumerNum))
         f.write( '''ccnxGlobalRoutingHelper.AddOrigins ("/ndn/vod/nc", Node%d);\n''' % int(30))
         f.write( '''ccnxGlobalRoutingHelper.AddOrigins ("/ndn/vod/nc", Node%d);\n''' % int(60))
-        f.write('''ndn::AppHelper Client("ns3::ndn::ConsumerCbrNC");\n''')
+        f.write('''ndn::AppHelper Client("ns3::ndn::ConsumerCbr");\n''')
         f.write('''//ndn::AppHelper Client("ns3::ndn::ConsumerZipfMandelbrot");\n''')
         f.write('''Client.SetPrefix("/ndn/vod/nc");\n''')
         f.write('''Client.SetAttribute("Frequency", StringValue("%s"));\n''' %sys.argv[4])
