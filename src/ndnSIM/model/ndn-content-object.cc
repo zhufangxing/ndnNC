@@ -162,10 +162,10 @@ ContentObject::Serialize (Buffer::Iterator start) const
   // content
   // for now assume that contentdata length is zero
   start.WriteU16 (2 + 4 + 2 + 2 + (2 + 0));
-  start.WriteU16 (4 + 2 + 2 + (2 + 0));
+  start.WriteU16 (4 + 2 + 2 +2  + (2 + 0));
   start.WriteU32 (static_cast<uint32_t> (m_timestamp.ToInteger (Time::S)));
   start.WriteU16 (static_cast<uint16_t> (m_freshness.ToInteger (Time::S)));
-  start.WriteU16 (static_cast<uint32_t> (m_coef));
+  start.WriteU32 (static_cast<uint32_t> (m_coef));
   start.WriteU16 (0); // reserved 
   start.WriteU16 (0); // Length (ContentInfoOptions)
 
@@ -207,7 +207,7 @@ ContentObject::Deserialize (Buffer::Iterator start)
   if (i.ReadU16 () != (2 + 4 + 2 + 2 + (2 + 0))) // content length
     throw new ContentObjectException ();
 
-  if (i.ReadU16 () != (4 + 2 + 2 + (2 + 0))) // Length (content Info)
+  if (i.ReadU16 () != (4 + 2 + 2 + 2 +  (2 + 0))) // Length (content Info)
     throw new ContentObjectException ();
 
   m_timestamp = Seconds (i.ReadU32 ());
