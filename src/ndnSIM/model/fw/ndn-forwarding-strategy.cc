@@ -350,7 +350,7 @@ ForwardingStrategy::OnData (Ptr<Face> inFace,
 if(nc=="nc"){
     uint32_t seq_0=boost::lexical_cast<uint32_t>(seg);
     uint64_t coef_data=header->GetCoef();
-    //uint32_t for_time=seq_0%4+1;
+    //uint32_t for_tme=seq_0%4+1;
     uint32_t seq_base=(seq_0/seqScop)*seqScop;
     uint32_t seq_unit=seq_0%heap;
     Ptr<pit::Entry> pitEntry;
@@ -521,8 +521,8 @@ ForwardingStrategy::IsCoefSame(uint64_t coef_pit, uint64_t coef_data)
 //std::cout<<"IsCoefSame:"<<coef_pit<<" "<<coef_data<<std::endl;
 while(coef_pit>=10)
 	{
-	if(coef_pit%10000==coef_data) return true;
-	coef_pit/=10000;
+	if(coef_pit%100==coef_data) return true;
+	coef_pit/=100;
 	}
 return false;
 }

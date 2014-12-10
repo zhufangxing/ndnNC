@@ -70,7 +70,7 @@ ccnxGlobalRoutingHelper.AddOrigins ("/ndn/vod/nc", Node60);
 ndn::AppHelper Client("ns3::ndn::ConsumerCbrNC");
 //ndn::AppHelper Client("ns3::ndn::ConsumerZipfMandelbrot");
 Client.SetPrefix("/ndn/vod/nc");
-Client.SetAttribute("Frequency", StringValue("1000"));
+Client.SetAttribute("Frequency", StringValue("100"));
 Client.SetAttribute("Randomize", StringValue ("uniform"));
 Client.Install (Node0);
 Client.Install (Node10);
@@ -116,7 +116,7 @@ Client.Install (Node90);
   boost::tuple< boost::shared_ptr<std::ostream>, std::list<Ptr<ndn::AppDelayTracer> > >
   delayTracer = ndn::AppDelayTracer::InstallAll ("data-bestroute/nc100/app-delays-trace.txt");
 
-Simulator::Stop (Seconds (10)); 
+Simulator::Stop (Seconds (30)); 
   Simulator::Run ();
   for (NodeList::Iterator node = NodeList::Begin (); node != NodeList::End (); node ++)
   {

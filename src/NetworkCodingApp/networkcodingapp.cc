@@ -209,8 +209,8 @@ bool
 {
 while(coef_pit>=10)
         {
-        if(coef_pit%10000==coef_data) return true;
-        coef_pit/=10000;
+        if(coef_pit%100==coef_data) return true;
+        coef_pit/=100;
         }
 return false;
 }
