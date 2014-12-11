@@ -65,10 +65,18 @@ Multipath::Multipath ()
 
 bool
 Multipath::DoPropagateInterest (Ptr<Face> inFace,
-                                Ptr<const Interest> header,
+                                Ptr<Interest> header,
                                 Ptr<const Packet> origPacket,
                                 Ptr<pit::Entry> pitEntry)
 {
+  uint8_t paths = header->GetPathNum();
+	std::cout<<"paths--73"<<paths<<std::endl;
+  if( paths <= 1) 
+	{
+	std::cout<<paths<<std::endl;
+	return BestRouteDoPropagateInterest(inFace, header, origPacket, pitEntry);	
+	}
+  header->SetPathNum(paths-1);
   NS_LOG_FUNCTION (this << header->GetName ());
 
   // No real need to call parent's (green-yellow-red's strategy) method, since it is incorporated
@@ -119,6 +127,32 @@ if (!TrySendOutInterest (inFace,  metricFace.GetFace (), header, origPacket, pit
 
 }
 
+bool
+Multipath::BestRouteDoPropagateInterest (Ptr<Face> inFace,
+                                Ptr<const Interest> header,
+                                Ptr<const Packet> origPacket,
+                                Ptr<pit::Entry> pitEntry)
+{
+  NS_LOG_FUNCTION (this << header->GetName ());
+  int propagatedCount = 0;
+  BOOST_FOREACH (const fib::FaceMetric &metricFace, pitEntry->GetFibEntry ()->m_faces.get<fib::i_metric> ())
+    {
+      NS_LOG_DEBUG ("Trying " << boost::cref(metricFace));
+      if (metricFace.GetStatus () == fib::FaceMetric::NDN_FIB_RED) // all non-read faces are in front
+        break;
+
+      if (!TrySendOutInterest (inFace, metricFace.GetFace (), header, origPacket, pitEntry))
+        {
+          continue;
+        }
+
+      propagatedCount++;
+      break; // do only once
+    }
+
+  NS_LOG_INFO ("Propagated to " << propagatedCount << " faces");
+  return propagatedCount > 0;
+}
 
 
 } // namespace fw

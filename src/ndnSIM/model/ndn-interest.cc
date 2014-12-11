@@ -51,6 +51,7 @@ Interest::Interest ()
   , m_nonce (0)
   , m_nackType (NORMAL_INTEREST)
   , m_coef(0)
+  , m_pathNum(0)
 {
 }
 
@@ -61,6 +62,7 @@ Interest::Interest (const Interest &interest)
   , m_nonce               (interest.m_nonce)
   , m_nackType            (interest.m_nackType)
   , m_coef                (interest.m_coef)
+  , m_pathNum             (interest.m_pathNum)
 {
 }
 
@@ -117,11 +119,21 @@ Interest::SetCoef(uint64_t s)
 {
   m_coef = s;
 }
+void
+Interest::SetPathNum(uint8_t s)
+{
+  m_pathNum = s;
+}
 
 uint64_t
 Interest::GetCoef()const
 {
   return m_coef;
+}
+uint8_t
+Interest::GetPathNum()const
+{
+  return m_pathNum;
 }
 //end 
 
@@ -164,7 +176,7 @@ Interest::GetNack () const
 uint32_t
 Interest::GetSerializedSize (void) const
 {
-  size_t size = 2 + (1 + 4 + 2 + 1 + (m_name->GetSerializedSize ()) + (2 + 0) + (2 + 0))       +8;//modified by zfx +8
+  size_t size = 2 + (1 + 4 + 2 + 1 + (m_name->GetSerializedSize ()) + (2 + 0) + (2 + 0))       +8+1;//modified by zfx +8, coef+pathNum
   NS_LOG_INFO ("Serialize size = " << size);
 
   return size;
@@ -178,6 +190,7 @@ Interest::Serialize (Buffer::Iterator start) const
 
   start.WriteU32 (m_nonce);
   start.WriteU64 (m_coef);
+  start.WriteU8 (m_pathNum);
   start.WriteU8 (m_scope);
   start.WriteU8 (m_nackType);
 
@@ -207,6 +220,7 @@ Interest::Deserialize (Buffer::Iterator start)
 
   m_nonce = i.ReadU32 ();
   m_coef = i.ReadU64 ();
+  m_pathNum = i.ReadU8 ();
   m_scope = i.ReadU8 ();
   m_nackType = i.ReadU8 ();
   

@@ -164,10 +164,11 @@ void NetworkCodingApp::OnInterest (const Ptr<const ndn::InterestHeader> &interes
      //if( block != "")
      //   dataname = "/ndn/" + vod + "/" + nc + "/" + seg + "/" + block;
      //else
-        dataname = "/ndn/" + vod + "/" + nc + "/" + seg;
+        dataname = "/ndn/" + vod + "/" + nc + "/" + seg +"/" + boost::lexical_cast<string>(data_coef);
      data.SetName (Create<ndn::NameComponents> (dataname));
      data.SetFreshness(Seconds(0));
      data.SetCoef(data_coef);
+     data.SetSeq(boost::lexical_cast<int>(seg));
      data.SetTimestamp (Simulator::Now());
      data.SetSignature (0);
      static ndn::ContentObjectTail tailer; // doesn't require any configuration

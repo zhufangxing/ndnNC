@@ -348,7 +348,8 @@ ForwardingStrategy::OnData (Ptr<Face> inFace,
 
 
 if(nc=="nc"){
-    uint32_t seq_0=boost::lexical_cast<uint32_t>(seg);
+//    uint32_t seq_0=boost::lexical_cast<uint32_t>(seg);
+    uint32_t seq_0 = header->GetSeq();
     uint64_t coef_data=header->GetCoef();
 std::cout<<"FW-OnData:"<<header->GetName()<<" coef :"<<coef_data<<std::endl;
     uint32_t seq_base=(seq_0/seqScop)*seqScop;
@@ -357,12 +358,14 @@ std::cout<<"FW-OnData:"<<header->GetName()<<" coef :"<<coef_data<<std::endl;
     Ptr<ContentObject> header_t;
   //  bool isPitHit=false;
   for(uint32_t i=0;i<blocksNum;i++){
+  for(uint32_t j=10;j<=17;j++){
   uint32_t seq=seq_base+seq_unit+i*heap;
   Ptr<Name> nameWithSequence = Create<Name> ("ndn/vod/nc");
 //  (*nameWithSequence) ("ndn");
 //  (*nameWithSequence) (vod);
 //  (*nameWithSequence) (nc);
   (*nameWithSequence) (seq);
+  (*nameWithSequence) (j);
  
  Interest interestHeader;
   //interestHeader.SetNonce               (m_rand.GetValue ());
@@ -374,7 +377,7 @@ std::cout<<"FW-OnData:"<<header->GetName()<<" coef :"<<coef_data<<std::endl;
   pitEntry = m_pit->Lookup (*header_t);
   //uint64_t coef_pit = pitEntry->GetCoef();
 
-	if(i==0){
+	if(i==0&& j==10){
           FwHopCountTag hopCountTag;
 
           Ptr<Packet> payloadCopy = payload->Copy ();
@@ -397,6 +400,7 @@ std::cout<<"FW-OnData:"<<header->GetName()<<" coef :"<<coef_data<<std::endl;
       // Lookup another PIT entry
       pitEntry = m_pit->Lookup (*header_t);
     }
+}
 }
  
 // if (pitEntry == 0)

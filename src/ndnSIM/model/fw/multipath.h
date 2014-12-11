@@ -58,9 +58,15 @@ public:
   // from super
   virtual bool
   DoPropagateInterest (Ptr<Face> incomingFace,
-                       Ptr<const Interest> header,
+                       Ptr<Interest> header,
                        Ptr<const Packet> origPacket,
                        Ptr<pit::Entry> pitEntry);
+  bool
+  BestRouteDoPropagateInterest (Ptr<Face> inFace,
+                                Ptr<const Interest> header,
+                                Ptr<const Packet> origPacket,
+                                Ptr<pit::Entry> pitEntry);
+
 protected:
   static LogComponent g_log;
 };
