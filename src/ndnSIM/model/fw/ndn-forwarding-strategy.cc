@@ -315,6 +315,7 @@ else{//without network coding
     }
 std::cout<<"FW-interest:"<<header->GetName()<<std::endl;
   PropagateInterest (inFace, header, origPacket, pitEntry);
+  header->SetPathNum(1);
 }
 
 void

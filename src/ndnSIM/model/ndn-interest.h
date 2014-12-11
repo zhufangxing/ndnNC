@@ -196,11 +196,11 @@ public:
   void 
   SetCoef(uint64_t s);
   void 
-  SetPathNum(uint8_t s);
+  SetPathNum(uint32_t s);
  
   uint64_t 
   GetCoef()const;
-  uint8_t 
+  uint32_t 
   GetPathNum()const;
   //end
 
@@ -278,7 +278,7 @@ private:
   uint32_t m_nonce;              ///< Nonce. not used if zero
   uint8_t  m_nackType;           ///< Negative Acknowledgement type
   uint64_t m_coef;//coding coef
-  uint8_t m_pathNum;                ///< 0xFF not set, 0 local scope, 1 this host, 2 immediate neighborhood
+  uint32_t m_pathNum;                ///< 0xFF not set, 0 local scope, 1 this host, 2 immediate neighborhood
 };
 
 typedef Interest InterestHeader;

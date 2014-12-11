@@ -69,14 +69,14 @@ Multipath::DoPropagateInterest (Ptr<Face> inFace,
                                 Ptr<const Packet> origPacket,
                                 Ptr<pit::Entry> pitEntry)
 {
-  uint8_t paths = header->GetPathNum();
+  uint32_t paths = header->GetPathNum();
 	std::cout<<"paths--73"<<paths<<std::endl;
   if( paths <= 1) 
 	{
 	std::cout<<paths<<std::endl;
 	return BestRouteDoPropagateInterest(inFace, header, origPacket, pitEntry);	
 	}
-  header->SetPathNum(paths-1);
+  header->SetPathNum(1);
   NS_LOG_FUNCTION (this << header->GetName ());
 
   // No real need to call parent's (green-yellow-red's strategy) method, since it is incorporated
