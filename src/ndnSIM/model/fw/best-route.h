@@ -58,7 +58,7 @@ public:
   // from super
   virtual bool
   DoPropagateInterest (Ptr<Face> incomingFace,
-                       Ptr<const Interest> header,
+                       Ptr<Interest> header,
                        Ptr<const Packet> origPacket,
                        Ptr<pit::Entry> pitEntry);
 protected:
