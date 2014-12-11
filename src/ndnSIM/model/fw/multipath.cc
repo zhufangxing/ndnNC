@@ -65,7 +65,7 @@ Multipath::Multipath ()
 
 bool
 Multipath::DoPropagateInterest (Ptr<Face> inFace,
-                                Ptr<Interest> header,
+                                Ptr< Interest> header,
                                 Ptr<const Packet> origPacket,
                                 Ptr<pit::Entry> pitEntry)
 {

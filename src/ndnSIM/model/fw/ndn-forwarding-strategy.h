@@ -458,7 +458,7 @@ protected:
    */
   virtual void
   PropagateInterest (Ptr<Face> inFace,
-                     Ptr<const Interest> header,
+                     Ptr<Interest> header,
                      Ptr<const Packet> origPacket,
                      Ptr<pit::Entry> pitEntry);
 
