@@ -152,7 +152,7 @@ public:
 
   //added by zfx, search Interest in cs, it does not add miss in trace if missTrue=0; if missTrue=1, it can be replaced by Lookup();
   virtual boost::tuple<Ptr<Packet>, Ptr<const ContentObject>, Ptr<const Packet> >
-  Lookup_nc (Ptr<const Interest> interest, bool missTrue) = 0;
+  Lookup_nc (Ptr<const Interest> interest, bool missTrue, uint64_t coef_int) = 0;
 
   /**
    * \brief Add a new content to the content store.

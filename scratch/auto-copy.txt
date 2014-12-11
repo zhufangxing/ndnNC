@@ -20,7 +20,7 @@ int main (int argc, char *argv[])
   CommandLine cmd;
   cmd.Parse (argc, argv);
   AnnotatedTopologyReader topologyReader ("", 10);
-  topologyReader.SetFileName ("topo/topo100.txt");
+  topologyReader.SetFileName ("topo/topo100-zfx.txt");
   topologyReader.Read ();
   /*PointToPointHelper p2p;
   // Creating nodes
@@ -48,8 +48,8 @@ int main (int argc, char *argv[])
   ccnxHelper.SetPit ("ns3::ndn::pit::Lru","MaxSize", "1000");
   ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize", "1000");
  // ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Flooding");
-  ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::BestRoute");
-//  ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Multipath");
+//  ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::BestRoute");
+  ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Multipath");
   ccnxHelper.InstallAll ();
  
   // Installing global routing interface on all nodes

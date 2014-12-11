@@ -92,7 +92,10 @@ public:
   //added by zfx, search Interest in cs, it does not add miss in trace if missTrue=0; if missTrue=1, it can be  replaced by Lookup();
 
   virtual inline boost::tuple<Ptr<Packet>, Ptr<const ContentObject>, Ptr<const Packet> >
-  Lookup_nc (Ptr<const Interest> interest, bool missTrue);
+  Lookup_nc (Ptr<const Interest> interest, bool missTrue, uint64_t coef_int);
+
+  virtual inline bool
+  IsCoefSame(uint64_t coef_pit, uint64_t coef_data);
 
   virtual inline bool
   Add (Ptr<const ContentObject> header, Ptr<const Packet> packet);
@@ -191,14 +194,14 @@ ContentStoreImpl<Policy>::Lookup (Ptr<const Interest> interest)
 //added by zfx
 template<class Policy>
 boost::tuple<Ptr<Packet>, Ptr<const ContentObject>, Ptr<const Packet> >
-ContentStoreImpl<Policy>::Lookup_nc (Ptr<const Interest> interest, bool missTrue)
+ContentStoreImpl<Policy>::Lookup_nc (Ptr<const Interest> interest, bool missTrue, uint64_t coef_int)
 {
   NS_LOG_FUNCTION (this << interest->GetName ());
   //std::cout << "Lookup ContentStore:  "<<interest->GetName()<< std::endl;
   /// @todo Change to search with predicate
   typename super::const_iterator node = this->deepest_prefix_match (interest->GetName ());
 
-  if (node != this->end ())
+  if (node != this->end () && !IsCoefSame(coef_int, node->payload ()->GetHeader ()->GetCoef()))
     {
       this->m_cacheHitsTrace (interest, node->payload ()->GetHeader ());
 
@@ -217,6 +220,21 @@ ContentStoreImpl<Policy>::Lookup_nc (Ptr<const Interest> interest, bool missTrue
     }
       return boost::tuple<Ptr<Packet>, Ptr<ContentObject>, Ptr<Packet> > (0, 0, 0);
 }
+
+//added by zfx
+template<class Policy>
+bool
+ContentStoreImpl<Policy>::IsCoefSame(uint64_t coef_pit, uint64_t coef_data)
+{
+//std::cout<<"IsCoefSame:"<<coef_pit<<" "<<coef_data<<std::endl;
+while(coef_pit>=10)
+        {
+        if(coef_pit%100==coef_data) return true;
+        coef_pit/=100;
+        }
+return false;
+}
+
 
 template<class Policy>
 bool

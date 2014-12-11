@@ -11,12 +11,12 @@ int main (int argc, char *argv[])
   // Read optional command-line parameters (e.g., enable visualizer with ./waf --run=<> --visualize
   // setting default parameters for PointToPoint links and channels
   Config::SetDefault ("ns3::PointToPointNetDevice::DataRate", StringValue ("100Mbps"));
-  Config::SetDefault ("ns3::PointToPointChannel::Delay", StringValue ("1ms"));
+  Config::SetDefault ("ns3::PointToPointChannel::Delay", StringValue ("10ms"));
   Config::SetDefault ("ns3::DropTailQueue::MaxPackets", StringValue ("100"));
   CommandLine cmd;
   cmd.Parse (argc, argv);
   AnnotatedTopologyReader topologyReader ("", 10);
-  topologyReader.SetFileName ("topo/topo100.txt");
+  topologyReader.SetFileName ("topo/topo100-zfx.txt");
   topologyReader.Read ();
 
 
@@ -48,7 +48,7 @@ int main (int argc, char *argv[])
   ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize", "1000");
   //ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Flooding");
  ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::BestRoute");
- //ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Multipath");
+// ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Multipath");
   ccnxHelper.InstallAll ();
   
   // Installing global routing interface on all nodes

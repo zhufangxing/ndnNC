@@ -153,7 +153,7 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
 {
   m_inInterests (header, inFace);
   // modified by pengcheng
-  //std::cout << "FW Lookup header:" << *header << "  Name:"<< header->GetName()<< std::endl;
+  std::cout << "FW Lookup header:" << *header << "  Name:"<< header->GetName()<< std::endl;
   //string name, match;
   Name interest_name = header->GetName();
   //match = 
@@ -248,7 +248,7 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
 //std::cout <<"header name"<<&header->GetName()<<std::endl;
 
   //cs trace in Lookup, added by zfx
-  boost::tie (contentObject, contentObjectHeader, payload) = m_contentStore->Lookup_nc (header, i==(blocksNum-1));
+  boost::tie (contentObject, contentObjectHeader, payload) = m_contentStore->Lookup_nc (header, i==(blocksNum-1), coef_int);
   if (contentObject != 0 && !IsCoefSame(coef_int,contentObjectHeader->GetCoef()))
     {
       NS_ASSERT (contentObjectHeader != 0);
@@ -313,7 +313,7 @@ else{//without network coding
     {
       DidForwardSimilarInterest (inFace, header, origPacket, pitEntry);
     }
-//std::cout<<"FW-interest:"<<header->GetName()<<std::endl;
+std::cout<<"FW-interest:"<<header->GetName()<<std::endl;
   PropagateInterest (inFace, header, origPacket, pitEntry);
 }
 
@@ -350,7 +350,7 @@ ForwardingStrategy::OnData (Ptr<Face> inFace,
 if(nc=="nc"){
     uint32_t seq_0=boost::lexical_cast<uint32_t>(seg);
     uint64_t coef_data=header->GetCoef();
-    //uint32_t for_tme=seq_0%4+1;
+std::cout<<"FW-OnData:"<<header->GetName()<<" coef :"<<coef_data<<std::endl;
     uint32_t seq_base=(seq_0/seqScop)*seqScop;
     uint32_t seq_unit=seq_0%heap;
     Ptr<pit::Entry> pitEntry;

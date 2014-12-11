@@ -11,12 +11,12 @@ int main (int argc, char *argv[])
   // Read optional command-line parameters (e.g., enable visualizer with ./waf --run=<> --visualize
   // setting default parameters for PointToPoint links and channels
   Config::SetDefault ("ns3::PointToPointNetDevice::DataRate", StringValue ("100Mbps"));
-  Config::SetDefault ("ns3::PointToPointChannel::Delay", StringValue ("1ms"));
+  Config::SetDefault ("ns3::PointToPointChannel::Delay", StringValue ("10ms"));
   Config::SetDefault ("ns3::DropTailQueue::MaxPackets", StringValue ("100"));
   CommandLine cmd;
   cmd.Parse (argc, argv);
   AnnotatedTopologyReader topologyReader ("", 10);
-  topologyReader.SetFileName ("topo/topo100.txt");
+  topologyReader.SetFileName ("topo/topo100-zfx.txt");
   topologyReader.Read ();
 
 
@@ -45,9 +45,9 @@ int main (int argc, char *argv[])
   //ccnxHelper.InstallAll ();
   // Installing applications
   ccnxHelper.SetPit ("ns3::ndn::pit::Lru","MaxSize", "1000");
-ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize","1000");   //ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Flooding");
+ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize","2000");   //ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Flooding");
  ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::BestRoute");
- //ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Multipath");
+// ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Multipath");
   ccnxHelper.InstallAll ();
   
   // Installing global routing interface on all nodes
@@ -55,29 +55,50 @@ ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize","1000");   //ccnxHelpe
   ccnxGlobalRoutingHelper.InstallAll ();
   //Add /prefix origins to ndn::GlobalRouter
 Ptr<Node> Node0 = Names::Find<Node>("0");
+Ptr<Node> Node5 = Names::Find<Node>("5");
 Ptr<Node> Node10 = Names::Find<Node>("10");
+Ptr<Node> Node15 = Names::Find<Node>("15");
 Ptr<Node> Node20 = Names::Find<Node>("20");
+Ptr<Node> Node25 = Names::Find<Node>("25");
 Ptr<Node> Node30 = Names::Find<Node>("30");
+Ptr<Node> Node35 = Names::Find<Node>("35");
 Ptr<Node> Node40 = Names::Find<Node>("40");
+Ptr<Node> Node45 = Names::Find<Node>("45");
 Ptr<Node> Node50 = Names::Find<Node>("50");
+Ptr<Node> Node55 = Names::Find<Node>("55");
 Ptr<Node> Node60 = Names::Find<Node>("60");
+Ptr<Node> Node65 = Names::Find<Node>("65");
 Ptr<Node> Node70 = Names::Find<Node>("70");
+Ptr<Node> Node75 = Names::Find<Node>("75");
 Ptr<Node> Node80 = Names::Find<Node>("80");
+Ptr<Node> Node85 = Names::Find<Node>("85");
 Ptr<Node> Node90 = Names::Find<Node>("90");
+Ptr<Node> Node95 = Names::Find<Node>("95");
 ccnxGlobalRoutingHelper.AddOrigins ("/ndn/vod/ndn", Node30);
 ccnxGlobalRoutingHelper.AddOrigins ("/ndn/vod/ndn", Node60);
 ndn::AppHelper Client("ns3::ndn::ConsumerCbr");
 //ndn::AppHelper Client("ns3::ndn::ConsumerZipfMandelbrot");
 Client.SetPrefix("/ndn/vod/ndn");
-Client.SetAttribute("Frequency", StringValue("100"));
+Client.SetAttribute("Frequency", StringValue("400"));
+Client.SetAttribute("Randomize", StringValue ("uniform"));
 Client.Install (Node0);
+Client.Install (Node5);
 Client.Install (Node10);
+Client.Install (Node15);
 Client.Install (Node20);
+Client.Install (Node25);
+Client.Install (Node35);
 Client.Install (Node40);
+Client.Install (Node45);
 Client.Install (Node50);
+Client.Install (Node55);
+Client.Install (Node65);
 Client.Install (Node70);
+Client.Install (Node75);
 Client.Install (Node80);
+Client.Install (Node85);
 Client.Install (Node90);
+Client.Install (Node95);
  
   ndn::AppHelper producer("ns3::ndn::Producer");
   producer.SetPrefix("/ndn/vod/ndn");
@@ -113,7 +134,7 @@ Client.Install (Node90);
   boost::tuple< boost::shared_ptr<std::ostream>, std::list<Ptr<ndn::AppDelayTracer> > >
   delayTracer = ndn::AppDelayTracer::InstallAll (path+"/app-delays-trace.txt");
 
-Simulator::Stop (Seconds (30)); 
+Simulator::Stop (Seconds (20)); 
   Simulator::Run ();
   /*for (NodeList::Iterator node = NodeList::Begin (); node != NodeList::End (); node ++)
   {
