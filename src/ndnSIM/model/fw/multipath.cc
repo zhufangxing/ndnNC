@@ -24,6 +24,7 @@
 #include "ns3/ndn-interest.h"
 #include "ns3/ndn-pit.h"
 #include "ns3/ndn-pit-entry.h"
+#include "ns3/ndnSIM/utils/ndn-fw-hop-count-tag.h"
 
 #include "ns3/assert.h"
 #include "ns3/log.h"
@@ -69,14 +70,13 @@ Multipath::DoPropagateInterest (Ptr<Face> inFace,
                                 Ptr<const Packet> origPacket,
                                 Ptr<pit::Entry> pitEntry)
 {
-  uint32_t paths = header->GetPathNum();
-	std::cout<<"paths--73"<<paths<<std::endl;
-  if( paths <= 1) 
+  uint32_t path2;
+  FwHopCountTag hopCountTag;
+      if (origPacket->PeekPacketTag (hopCountTag)) path2 = hopCountTag.Get();
+  if( path2 > 0)//consumer is hop 0 
 	{
-	std::cout<<paths<<std::endl;
 	return BestRouteDoPropagateInterest(inFace, header, origPacket, pitEntry);	
 	}
-  header->SetPathNum(1);
   NS_LOG_FUNCTION (this << header->GetName ());
 
   // No real need to call parent's (green-yellow-red's strategy) method, since it is incorporated

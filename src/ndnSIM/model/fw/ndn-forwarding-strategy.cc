@@ -226,6 +226,7 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
   uint64_t coef_int=header->GetCoef();
   if(nc=="nc")
   for(uint32_t i=0;i<blocksNum;i++){
+  for(uint32_t j=10;j<=17;j++){
   Ptr<Name> nameWithSequence = Create<Name> ("ndn/vod/nc");
   uint32_t  seq_t=i*heap+seq_base+seq_unit;
 //  if(IsCoefSame(coef_int,seq_t%seqScop+10)) continue;
@@ -233,6 +234,7 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
 //  (*nameWithSequence) (vod);
 //  (*nameWithSequence) (nc);
   (*nameWithSequence) (seq_t);
+  (*nameWithSequence) (j);
  
 // Interest header_nc;
 //  header_nc.SetNonce               (header->GetNonce());
@@ -248,7 +250,7 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
 //std::cout <<"header name"<<&header->GetName()<<std::endl;
 
   //cs trace in Lookup, added by zfx
-  boost::tie (contentObject, contentObjectHeader, payload) = m_contentStore->Lookup_nc (header, i==(blocksNum-1), coef_int);
+  boost::tie (contentObject, contentObjectHeader, payload) = m_contentStore->Lookup_nc (header, i==(blocksNum-1) && j==17, coef_int);
   if (contentObject != 0 && !IsCoefSame(coef_int,contentObjectHeader->GetCoef()))
     {
       NS_ASSERT (contentObjectHeader != 0);
@@ -269,6 +271,7 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
       return;
     }
 	
+  } 
   } 
 
 else{//without network coding
@@ -359,14 +362,12 @@ std::cout<<"FW-OnData:"<<header->GetName()<<" coef :"<<coef_data<<std::endl;
     Ptr<ContentObject> header_t;
   //  bool isPitHit=false;
   for(uint32_t i=0;i<blocksNum;i++){
-  for(uint32_t j=10;j<=17;j++){
   uint32_t seq=seq_base+seq_unit+i*heap;
   Ptr<Name> nameWithSequence = Create<Name> ("ndn/vod/nc");
 //  (*nameWithSequence) ("ndn");
 //  (*nameWithSequence) (vod);
 //  (*nameWithSequence) (nc);
   (*nameWithSequence) (seq);
-  (*nameWithSequence) (j);
  
  Interest interestHeader;
   //interestHeader.SetNonce               (m_rand.GetValue ());
@@ -378,7 +379,7 @@ std::cout<<"FW-OnData:"<<header->GetName()<<" coef :"<<coef_data<<std::endl;
   pitEntry = m_pit->Lookup (*header_t);
   //uint64_t coef_pit = pitEntry->GetCoef();
 
-	if(i==0&& j==10){
+	if(i==0){
           FwHopCountTag hopCountTag;
 
           Ptr<Packet> payloadCopy = payload->Copy ();
@@ -401,7 +402,6 @@ std::cout<<"FW-OnData:"<<header->GetName()<<" coef :"<<coef_data<<std::endl;
       // Lookup another PIT entry
       pitEntry = m_pit->Lookup (*header_t);
     }
-}
 }
  
 // if (pitEntry == 0)
