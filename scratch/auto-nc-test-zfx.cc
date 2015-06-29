@@ -20,7 +20,7 @@ int main (int argc, char *argv[])
   CommandLine cmd;
   cmd.Parse (argc, argv);
   AnnotatedTopologyReader topologyReader ("", 10);
-  topologyReader.SetFileName ("topo/topo100-zfx.txt");
+  topologyReader.SetFileName ("topo/topo100-2-zfx.txt");
   topologyReader.Read ();
   /*PointToPointHelper p2p;
   // Creating nodes
@@ -46,7 +46,7 @@ int main (int argc, char *argv[])
   //ccnxHelper.InstallAll ();
   // Installing applications
   ccnxHelper.SetPit ("ns3::ndn::pit::Lru","MaxSize", "1000");
-ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize","2000");  // ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Flooding");
+ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize","4000");  // ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Flooding");
 //  ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::BestRoute");
   ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Multipath");
   ccnxHelper.InstallAll ();
@@ -70,16 +70,16 @@ ccnxGlobalRoutingHelper.AddOrigins ("/ndn/vod/nc", Node60);
 ndn::AppHelper Client("ns3::ndn::ConsumerCbrNC");
 //ndn::AppHelper Client("ns3::ndn::ConsumerZipfMandelbrot");
 Client.SetPrefix("/ndn/vod/nc");
-Client.SetAttribute("Frequency", StringValue("400"));
+Client.SetAttribute("Frequency", StringValue("350"));
 Client.SetAttribute("Randomize", StringValue ("uniform"));
-Client.Install (Node0);
-Client.Install (Node10);
-Client.Install (Node20);
-Client.Install (Node40);
-Client.Install (Node50);
-Client.Install (Node70);
-Client.Install (Node80);
-Client.Install (Node90);
+ApplicationContainer app0 = Client.Install (Node0);
+ApplicationContainer app10 = Client.Install (Node10);
+ApplicationContainer app20 = Client.Install (Node20);
+ApplicationContainer app40 = Client.Install (Node40);
+ApplicationContainer app50 = Client.Install (Node50);
+ApplicationContainer app70 = Client.Install (Node70);
+ApplicationContainer app80 = Client.Install (Node80);
+ApplicationContainer app90 = Client.Install (Node90);
  
   /*ndn::AppHelper producer("ns3::ndn::Producer");
   producer.SetPrefix("/ndn/vod/nc");

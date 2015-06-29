@@ -114,7 +114,7 @@ void NetworkCodingApp::OnInterest (const Ptr<const ndn::InterestHeader> &interes
   //uint32_t heap=1000;     //eg, 1, 1+heap, 1+2*heap, 1+3*heap  are coeded in a segment
   //uint32_t seqScop=blocksNum*heap;
 
-   std::cout<<"Producer-interest:"<<interest->GetName()<<" Coef:"<<interest->GetCoef()<<std::endl;
+   //std::cout<<"Producer-interest:"<<interest->GetName()<<" Coef:"<<interest->GetCoef()<<std::endl;
    App::OnInterest(interest,origPacket);
    NS_LOG_FUNCTION(this << interest);
    if(!m_active) return;
@@ -151,7 +151,7 @@ void NetworkCodingApp::OnInterest (const Ptr<const ndn::InterestHeader> &interes
      while(true ){
         uint32_t j=m_rand.GetInteger(0,2*blocksNum-1);
 	data_coef = j+10;
-	std::cout<<"j "<<j<<std::endl;
+	//std::cout<<"j "<<j<<std::endl;
         if(!IsCoefSame(interest->GetCoef(),data_coef)) break;
         }
     // seg=boost::lexical_cast<string>(seq_t);

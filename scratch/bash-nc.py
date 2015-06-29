@@ -19,7 +19,9 @@ def topo(filename,consumerNum):
         for i in range(0,consumerNum): 
 	    if int(i*100/consumerNum)==30 : continue
 	    if int(i*100/consumerNum)==60 : continue
-            f.write( '''Client.Install (Node%d);\n''' % int(i*100/consumerNum))
+            #f.write( '''Client.Install (Node%d);\n''' % int(i*100/consumerNum))
+	    f.write( '''ApplicationContainer app%d = Client.Install (Node%d);\n''' %(int(i*100/consumerNum), int(i*100/consumerNum)))
+#            f.write('''app%d.Start(Seconds(%d));\n''' %(i,i%2))
         
 #consumerNum = int(input('Please enter the Number of Consumer (0-100):'))
 ###############write variable into file################

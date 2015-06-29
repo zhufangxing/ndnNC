@@ -153,7 +153,7 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
 {
   m_inInterests (header, inFace);
   // modified by pengcheng
-  std::cout << "FW Lookup header:" << *header << "  Name:"<< header->GetName()<< std::endl;
+  //std::cout << "FW Lookup header:" << *header << "  Name:"<< header->GetName()<< std::endl;
   //string name, match;
   Name interest_name = header->GetName();
   //match = 
@@ -162,7 +162,7 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
   int num = 0;
   string vod, nc, seg;
   uint32_t blocksNum=4;
-  uint32_t heap=1000;     //eg, 1, 1+heap, 1+2*heap, 1+3*heap  are coeded in a segment
+  uint32_t heap=500;     //eg, 1, 1+heap, 1+2*heap, 1+3*heap  are coeded in a segment
   uint32_t seqScop=blocksNum*heap;
 
   for (iter = prefix.begin(); iter != prefix.end(); iter++, num++)
@@ -226,7 +226,7 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
   uint64_t coef_int=header->GetCoef();
   if(nc=="nc")
   for(uint32_t i=0;i<blocksNum;i++){
-  for(uint32_t j=10;j<=17;j++){
+  for(uint32_t j=10;j<=blocksNum*2+9;j++){
   Ptr<Name> nameWithSequence = Create<Name> ("ndn/vod/nc");
   uint32_t  seq_t=i*heap+seq_base+seq_unit;
 //  if(IsCoefSame(coef_int,seq_t%seqScop+10)) continue;
@@ -250,7 +250,7 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
 //std::cout <<"header name"<<&header->GetName()<<std::endl;
 
   //cs trace in Lookup, added by zfx
-  boost::tie (contentObject, contentObjectHeader, payload) = m_contentStore->Lookup_nc (header, i==(blocksNum-1) && j==17, coef_int);
+  boost::tie (contentObject, contentObjectHeader, payload) = m_contentStore->Lookup_nc (header, i==(blocksNum-1) && j==(9+blocksNum*2), coef_int);
   if (contentObject != 0 && !IsCoefSame(coef_int,contentObjectHeader->GetCoef()))
     {
       NS_ASSERT (contentObjectHeader != 0);
@@ -316,7 +316,7 @@ else{//without network coding
     {
       DidForwardSimilarInterest (inFace, header, origPacket, pitEntry);
     }
-std::cout<<"FW-interest:"<<header->GetName()<<std::endl;
+//std::cout<<"FW-interest:"<<header->GetName()<<std::endl;
   PropagateInterest (inFace, header, origPacket, pitEntry);
   header->SetPathNum(1);
 }
@@ -333,7 +333,7 @@ ForwardingStrategy::OnData (Ptr<Face> inFace,
 
   //modified by zfx
   uint32_t blocksNum=4;
-  uint32_t heap=1000;     //eg, 1, 1+heap, 1+2*heap, 1+3*heap  are coeded in a segment
+  uint32_t heap=500;     //eg, 1, 1+heap, 1+2*heap, 1+3*heap  are coeded in a segment
   uint32_t seqScop=blocksNum*heap;
 
   list<string> prefix = header->GetName().GetComponents();
@@ -355,12 +355,12 @@ if(nc=="nc"){
 //    uint32_t seq_0=boost::lexical_cast<uint32_t>(seg);
     uint32_t seq_0 = header->GetSeq();
     uint64_t coef_data=header->GetCoef();
-std::cout<<"FW-OnData:"<<header->GetName()<<" coef :"<<coef_data<<std::endl;
+//std::cout<<"FW-OnData:"<<header->GetName()<<" coef :"<<coef_data<<std::endl;
     uint32_t seq_base=(seq_0/seqScop)*seqScop;
     uint32_t seq_unit=seq_0%heap;
     Ptr<pit::Entry> pitEntry;
     Ptr<ContentObject> header_t;
-  //  bool isPitHit=false;
+  bool isPitHit = false;
   for(uint32_t i=0;i<blocksNum;i++){
   uint32_t seq=seq_base+seq_unit+i*heap;
   Ptr<Name> nameWithSequence = Create<Name> ("ndn/vod/nc");
@@ -391,7 +391,7 @@ std::cout<<"FW-OnData:"<<header->GetName()<<" coef :"<<coef_data<<std::endl;
  while (pitEntry != 0)
     {
      // if(!IsCoefSame(pitEntry->GetIncoming().m_face,coef_data)){
-//	isPitHit=true;
+	isPitHit=true;
       // Do data plane performance measurements
       WillSatisfyPendingInterest (inFace, pitEntry);
 
@@ -403,6 +403,11 @@ std::cout<<"FW-OnData:"<<header->GetName()<<" coef :"<<coef_data<<std::endl;
       pitEntry = m_pit->Lookup (*header_t);
     }
 }
+    if(!isPitHit) 
+        {
+          m_dropData (header, payload, inFace);
+          NS_LOG_DEBUG ("Cannot satisfy data to " << inFace);
+        }
  
 // if (pitEntry == 0)
  // if(!isPitHit) ; 
@@ -717,7 +722,6 @@ ForwardingStrategy::SatisfyPendingInterest_nc (Ptr<Face> inFace,
 
   // Set pruning timout on PIT entry (instead of deleting the record)
   m_pit->MarkErased (pitEntry);
-
 //############ version 1 #########################
 // std::set<uint64_t>::iterator it_coef = pitEntry->GetCoef().begin();
 //  //satisfy all pending incoming Interests

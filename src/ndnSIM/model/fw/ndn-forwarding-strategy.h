@@ -299,7 +299,7 @@ protected:
                           Ptr<const Packet> origPacket,
                           Ptr<pit::Entry> pitEntry);
 //added by zfx
-  virtual void
+  virtual void 
   SatisfyPendingInterest_nc (Ptr<Face> inFace, // 0 allowed (from cache)
                           Ptr<const ContentObject> header,
                           Ptr<const Packet> payload,
