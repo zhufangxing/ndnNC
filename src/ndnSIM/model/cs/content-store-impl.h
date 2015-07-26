@@ -118,6 +118,8 @@ public:
   virtual Ptr<Entry>
   Next (Ptr<Entry>);
 
+  bool isFull(){ return (GetMaxSize ()<= GetSize ()); };
+
 private:
   void
   SetMaxSize (uint32_t maxSize);
@@ -199,6 +201,7 @@ ContentStoreImpl<Policy>::Lookup_nc (Ptr<const Interest> interest, bool missTrue
   NS_LOG_FUNCTION (this << interest->GetName ());
   //std::cout << "Lookup ContentStore:  "<<interest->GetName()<< std::endl;
   /// @todo Change to search with predicate
+  // a Interest arrived to a router, and it will call this function several time, but miss need only added by 1, which will be added at the last time;
   typename super::const_iterator node = this->deepest_prefix_match (interest->GetName ());
 
   if (node != this->end () && !IsCoefSame(coef_int, node->payload ()->GetHeader ()->GetCoef()))

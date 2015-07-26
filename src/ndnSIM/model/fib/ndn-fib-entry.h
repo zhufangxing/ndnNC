@@ -175,6 +175,13 @@ public:
     return m_status;
   }
 
+  //added by zfx
+  Time
+  GetSRtt () const
+  {
+    return m_sRtt;
+  }
+
 private:
   friend std::ostream& operator<< (std::ostream& os, const FaceMetric &metric);
 
