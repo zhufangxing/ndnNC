@@ -2,9 +2,10 @@
 #define NetworkCodingApp_H_
 
 #include "ns3/ndn-app.h"
+#include "ns3/ndn-name.h"
 
 namespace ns3 {
-
+namespace ndn {
 class NetworkCodingApp : public ndn::App
 {
 public:
@@ -37,8 +38,12 @@ public:
   IsCoefSame(uint64_t coef_pit, uint64_t coef_data);
 private:
   void  SendInterest ();
+  Name m_prefix;
+  uint32_t m_virtualPayloadSize;
+  Time m_freshness;
 };
 
+} // namespace ndn
 } // namespace ns3
 
 #endif // NETWROKCODING_APP_H_

@@ -32,7 +32,7 @@ f=open("scratch/auto-ndn-test-zfx.cc", "w")
 for i in range(1,48):
     s=fr.readline()
     f.write(s)
-f.write('''ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize","%s"); ''' %sys.argv[2])
+f.write('''ccnxHelper.SetContentStore ("ns3::ndn::cs::LifetimeBasedGreedy::Lru","MaxSize","%s"); ''' %sys.argv[2])
 fr.readline()
 for i in range(49,58):
     s=fr.readline()

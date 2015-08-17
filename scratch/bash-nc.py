@@ -26,7 +26,7 @@ def topo(filename,consumerNum):
 #consumerNum = int(input('Please enter the Number of Consumer (0-100):'))
 ###############write variable into file################
 f_result=open("data-result.txt","a")
-f_result.write("userNum=%s CS=%s runTime=%s frequency=%s \n" %(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]))
+f_result.write("userNum=%s CS=%s runTime=%s frequency=%s Freshness=%s \n" %(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]))
 f_result.close()
 #######################################################
 consumerNum = int(sys.argv[1])
@@ -35,7 +35,8 @@ f=open("scratch/auto-nc-test-zfx.cc", "w")
 for i in range(1,49):
     s=fr.readline()
     f.write(s)
-f.write('''ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize","%s"); ''' %sys.argv[2])
+f.write('''ccnxHelper.SetContentStore ("ns3::ndn::cs::LifetimeBasedGreedy::Lru","MaxSize","%s"); ''' %sys.argv[2])
+#f.write('''ccnxHelper.SetContentStore ("ns3::ndn::cs::Freshness::Lru","MaxSize","%s"); ''' %sys.argv[2])
 fr.readline()
 for i in range(50,59):
     s=fr.readline()
@@ -43,7 +44,13 @@ for i in range(50,59):
 topo('''topo.txt''',consumerNum)
 for i in range(59,69):
     s=fr.readline()
-for i in range(69,105):
+for i in range(69,81):
+    s=fr.readline()
+    f.write(s)
+f.write('''consumerHelper.SetAttribute("Freshness", TimeValue (Seconds (%d)));\n''' %float(sys.argv[5]))
+#f.write('''consumerHelper.SetAttribute("Freshness", TimeValue (Seconds(1)));\n''' )
+
+for i in range(81,105):
     s=fr.readline()
     f.write(s)
 f.write('''Simulator::Stop (Seconds (%d)); \n''' %int(sys.argv[3]))

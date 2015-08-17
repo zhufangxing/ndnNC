@@ -48,7 +48,7 @@ namespace ndnSIM{
 struct mLifetimeBaseGreedy_policy_traits
 {
   /// @brief Name that can be used to identify the policy (for NS-3 object model and logging)
-  static std::string GetName () { return "Freshness"; }
+  static std::string GetName () { return "LifetimeBaseGreedy"; }
 
   struct policy_hook_type : public boost::intrusive::set_member_hook<> { Time timeWhenShouldExpire; };
 
@@ -114,7 +114,7 @@ struct mLifetimeBaseGreedy_policy_traits
 
             // push item only if freshness is non zero. otherwise, this payload is not controlled by the policy
             // note that .size() on this policy would return only number of items with non-infinite freshness policy
-            policy_container::push_back (*item);
+            //policy_container::push_back (*item);
           }
       }
 
@@ -145,7 +145,7 @@ struct mLifetimeBaseGreedy_policy_traits
 
             // push item only if freshness is non zero. otherwise, this payload is not controlled by the policy
             // note that .size() on this policy would return only number of items with non-infinite freshness policy
-            policy_container::push_back (*item);
+            //policy_container::push_back (*item);
           }
       }
 
@@ -262,19 +262,20 @@ template<class Policy>
 inline bool
 ContentStoreWithLifetimeBasedGreedy< Policy >::Add (Ptr<const ContentObject> header, Ptr<const Packet> packet)
 {
-  if (!m_cleanEvent.IsRunning ())
-    {
-      CleanExpired ();
-    }
+  // if (!m_cleanEvent.IsRunning ())
+  //   {
+  //     CleanExpired ();
+  //   }
   if (!super::isFull())
   {
     bool ok = super::Add (header, packet);
     if (!ok) return false;
 
     NS_LOG_DEBUG (header->GetName () << " added to cache");  
+    RescheduleCleaning ();
     return true;    
   }
-  
+  RescheduleCleaning ();
   return false;  
 }
 
@@ -326,6 +327,7 @@ ContentStoreWithLifetimeBasedGreedy< Policy >::CleanExpired ()
 
       if (freshness_policy_container::policy_base::get_freshness (&(*entry)) <= now) // is the record stale?
         {
+          //cout<<"erase entry now .."<<std::endl;
           super::erase (&(*entry));
         }
       else

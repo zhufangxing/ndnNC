@@ -46,7 +46,7 @@ int main (int argc, char *argv[])
   //ccnxHelper.InstallAll ();
   // Installing applications
   ccnxHelper.SetPit ("ns3::ndn::pit::Lru","MaxSize", "1000");
-  ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize", "1000");
+  ccnxHelper.SetContentStore ("ns3::ndn::cs::LifetimeBasedGreedy::LRU","MaxSize", "1000");
  // ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Flooding");
 //  ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::BestRoute");
   ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Multipath");

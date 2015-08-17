@@ -8,6 +8,7 @@
 #include "ns3/ndn-face.h"
 #include "ns3/ndn-interest.h"
 #include "ns3/ndnSIM/utils/ndn-fw-hop-count-tag.h"
+#include "ns3/string.h"
 
 //#include "ns3/ndn-data.h"
 #include "ns3/ndn-interest.h"
@@ -26,6 +27,7 @@ using namespace std;
 NS_LOG_COMPONENT_DEFINE ("NetworkCodingApp");
 
 namespace ns3 {
+namespace ndn {
 
 NS_OBJECT_ENSURE_REGISTERED (NetworkCodingApp);
 // register NS-3 type
@@ -34,6 +36,19 @@ TypeId NetworkCodingApp::GetTypeId ()
   static TypeId tid = TypeId ("NetworkCodingApp")
     .SetParent<ndn::App> ()
     .AddConstructor<NetworkCodingApp> ()
+    .AddAttribute ("Prefix","Prefix, for which producer has the data",
+                   StringValue ("/"),
+                   MakeNameAccessor (&NetworkCodingApp::m_prefix),
+                   MakeNameChecker ())
+    .AddAttribute ("PayloadSize", "Virtual payload size for Content packets",
+                   UintegerValue (1024),
+                   MakeUintegerAccessor(&NetworkCodingApp::m_virtualPayloadSize),
+                   MakeUintegerChecker<uint32_t>())
+    .AddAttribute ("Freshness", "Freshness of data packets, if 0, then unlimited freshness",
+                   TimeValue (Seconds (1)),
+                   MakeTimeAccessor (&NetworkCodingApp::m_freshness),
+                   MakeTimeChecker ())
+    
     ;
   return tid;
 }
@@ -103,7 +118,7 @@ void NetworkCodingApp::SendInterest ()
    // Call trace (for logging purposes)
    m_transmittedInterests (&interestHeader, this, m_face);
    //SgggcheduleNextPacket();
-   cout << " Send interest success "<< endl; 
+   //cout << " Send interest success "<< endl; 
    //m_face->ReceiveInterest (interest);
 }
 
@@ -120,7 +135,7 @@ void NetworkCodingApp::OnInterest (const Ptr<const ndn::InterestHeader> &interes
    if(!m_active) return;
    const ndn::NameComponents name = interest->GetName().cut(1);
    ndn::NameComponents name2 = ndn::NameComponents("/ndn/vod/nc");
-   cout <<"Node :"<<GetNode()->GetId() <<" OnInterest: "<<interest->GetName() << " name: " << interest->GetName() <<"NC coef:"<<interest->GetCoef() <<endl; 
+   //cout <<"Node :"<<GetNode()->GetId() <<" OnInterest: "<<interest->GetName() << " name: " << interest->GetName() <<"NC coef:"<<interest->GetCoef()<<endl; 
    if(name == name2)
    {
      NS_LOG_DEBUG ("Receiving Interest for Network Coding " << interest->GetName() );
@@ -166,7 +181,8 @@ void NetworkCodingApp::OnInterest (const Ptr<const ndn::InterestHeader> &interes
      //else
         dataname = "/ndn/" + vod + "/" + nc + "/" + seg +"/" + boost::lexical_cast<string>(data_coef);
      data.SetName (Create<ndn::NameComponents> (dataname));
-     data.SetFreshness(Seconds(0));
+     data.SetFreshness (m_freshness);
+     //data.SetFreshness(Seconds (0.2));
      data.SetCoef(data_coef);
      data.SetSeq(boost::lexical_cast<int>(seg));
      data.SetTimestamp (Simulator::Now());
@@ -191,10 +207,10 @@ void NetworkCodingApp::OnInterest (const Ptr<const ndn::InterestHeader> &interes
      m_transmittedContentObjects (&data, packet, this, m_face);
      // Forward packet to lower (network) layer
      m_protocolHandler (packet);
-     cout <<" Send data: " << data.GetName() <<" coef: "<<data.GetCoef()<<"  success."<< endl;
+     //cout <<" Send data: " << data.GetName() <<" coef: "<<data.GetCoef()<<"  success."<<"Freshness"<< data.GetFreshness()<< endl;
    }else
    {
-     cout << "unexpected Interest"<< interest->GetName()<<endl;
+     //cout << "unexpected Interest"<< interest->GetName()<<endl;
    }
 }
 // (overridden from ndn::App) Callback that will be called when Data arrives
@@ -202,7 +218,7 @@ void NetworkCodingApp::OnContentObject (const Ptr<const ndn::ContentObjectHeader
 {
     //NS_LOG_DEBUG ("Receiving Data packet for Network Coding " <<  contentObject->GetName() );
     ndn::App::OnContentObject(contentObject, payload);
-    cout <<"Node: "<<GetNode()->GetId()<<"DATA received for name " << contentObject->GetName() << endl;
+    //cout <<"Node: "<<GetNode()->GetId()<<"DATA received for name " << contentObject->GetName() << endl;
 }
 
 //added by zfx
@@ -217,4 +233,5 @@ while(coef_pit>=10)
 return false;
 }
 
+} // namespace ndn
 } // namespace ns3

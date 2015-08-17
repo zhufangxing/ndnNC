@@ -20,7 +20,7 @@ int main (int argc, char *argv[])
   CommandLine cmd;
   cmd.Parse (argc, argv);
   AnnotatedTopologyReader topologyReader ("", 10);
-  topologyReader.SetFileName ("topo/topo100-2-zfx.txt");
+  topologyReader.SetFileName ("topo/topo100-zfx.txt");
   topologyReader.Read ();
   /*PointToPointHelper p2p;
   // Creating nodes
@@ -46,7 +46,7 @@ int main (int argc, char *argv[])
   //ccnxHelper.InstallAll ();
   // Installing applications
   ccnxHelper.SetPit ("ns3::ndn::pit::Lru","MaxSize", "1000");
-ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize","4000");  // ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Flooding");
+ccnxHelper.SetContentStore ("ns3::ndn::cs::LifetimeBasedGreedy::Lru","MaxSize","4000");  // ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Flooding");
 //  ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::BestRoute");
   ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Multipath");
   ccnxHelper.InstallAll ();
@@ -70,7 +70,7 @@ ccnxGlobalRoutingHelper.AddOrigins ("/ndn/vod/nc", Node60);
 ndn::AppHelper Client("ns3::ndn::ConsumerCbrNC");
 //ndn::AppHelper Client("ns3::ndn::ConsumerZipfMandelbrot");
 Client.SetPrefix("/ndn/vod/nc");
-Client.SetAttribute("Frequency", StringValue("350"));
+Client.SetAttribute("Frequency", StringValue("200"));
 Client.SetAttribute("Randomize", StringValue ("uniform"));
 ApplicationContainer app0 = Client.Install (Node0);
 ApplicationContainer app10 = Client.Install (Node10);
@@ -92,6 +92,7 @@ ApplicationContainer app90 = Client.Install (Node90);
   //ApplicationContainer app4 = producer.Install(node4);
   
   ndn::AppHelper consumerHelper ("NetworkCodingApp");
+consumerHelper.SetAttribute("Freshness", TimeValue (Seconds (10)));
   //ApplicationContainer app1 = consumerHelper.Install (node1); 
   //ApplicationContainer app2 = consumerHelper.Install (node2);
   //ApplicationContainer app3 = consumerHelper.Install (node3);
