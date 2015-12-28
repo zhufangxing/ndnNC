@@ -8,6 +8,7 @@
 #include "ns3/ndn-face.h"
 #include "ns3/ndn-interest.h"
 #include "ns3/ndnSIM/utils/ndn-fw-hop-count-tag.h"
+#include "ns3/ndnSIM/utils/ndn-fw-hop-time-tag.h"
 #include "ns3/string.h"
 
 //#include "ns3/ndn-data.h"
@@ -198,10 +199,17 @@ void NetworkCodingApp::OnInterest (const Ptr<const ndn::InterestHeader> &interes
      packet->AddTrailer (tailer);
  
      ns3::ndn::FwHopCountTag hopCountTag;
-     if(origPacket->RemovePacketTag(hopCountTag))
-     {
-        packet->AddPacketTag (hopCountTag);
-     }
+     origPacket->RemovePacketTag(hopCountTag);
+     ns3::ndn::FwHopCountTag hopCountTag2;     
+     packet->AddPacketTag (hopCountTag2);  
+
+     //add for INFORM forwarding
+     ns3::ndn::FwHopTimeTag hopTimeTag;
+     origPacket->RemovePacketTag(hopTimeTag);
+     ns3::ndn::FwHopTimeTag hopTimeTag2;
+     packet->AddPacketTag (hopTimeTag2);
+     
+
      NS_LOG_DEBUG ("[" << Simulator::Now() << "] "<<" " << "Sending ContentObject packet for " << data.GetName ());
      // Call trace (for logging purposes)
      m_transmittedContentObjects (&data, packet, this, m_face);

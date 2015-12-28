@@ -21,7 +21,7 @@ def topo(filename,consumerNum):
 	    if int(i*100/consumerNum)==60 : continue
             #f.write( '''Client.Install (Node%d);\n''' % int(i*100/consumerNum))
 	    f.write( '''ApplicationContainer app%d = Client.Install (Node%d);\n''' %(int(i*100/consumerNum), int(i*100/consumerNum)))
-#            f.write('''app%d.Start(Seconds(%d));\n''' %(i,i%2))
+            f.write('''app%d.Start(Seconds(%d));\n''' %(int(i*100/consumerNum),3*i))
         
 #consumerNum = int(input('Please enter the Number of Consumer (0-100):'))
 ###############write variable into file################
@@ -35,8 +35,8 @@ f=open("scratch/auto-nc-test-zfx.cc", "w")
 for i in range(1,49):
     s=fr.readline()
     f.write(s)
-f.write('''ccnxHelper.SetContentStore ("ns3::ndn::cs::LifetimeBasedGreedy::Lru","MaxSize","%s"); ''' %sys.argv[2])
-#f.write('''ccnxHelper.SetContentStore ("ns3::ndn::cs::Freshness::Lru","MaxSize","%s"); ''' %sys.argv[2])
+#f.write('''ccnxHelper.SetContentStore ("ns3::ndn::cs::LifetimeBasedGreedy::Lru","MaxSize","%s"); ''' %sys.argv[2])
+f.write('''ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize","%s"); ''' %sys.argv[2])
 fr.readline()
 for i in range(50,59):
     s=fr.readline()

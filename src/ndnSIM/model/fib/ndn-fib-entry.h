@@ -37,6 +37,8 @@
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 
+
+
 namespace ns3 {
 namespace ndn {
 
@@ -75,6 +77,12 @@ public:
     , m_rttVar (Seconds (0))
     , m_realDelay (Seconds (0))
     , m_bit (0)//added by zfx , for multipath forwarding
+    //added by zfx, the following parameters are used to PINFORM forwarding;
+    , m_QVariable(0.0)
+    , m_probability(0.0)
+    , m_modifyProbability(0.0)
+    , m_feasible(true)
+    
   { }
 
   /**
@@ -181,6 +189,52 @@ public:
   {
     return m_sRtt;
   }
+  //the following functions are used in Pinform forwarding, 2015.12.16
+  double 
+  GetQVariable()const
+  {
+    return m_QVariable;
+  }
+  void
+  SetQVariable(double var)
+  {
+    m_QVariable = var;
+  }
+  double 
+  GetProbability()const
+  {
+    return m_QVariable;
+  }
+  void
+  SetProbability(double var)
+  {
+    m_probability = var;
+  }
+  double 
+  GetModifyProbability()const
+  {
+    return m_modifyProbability;
+  }
+  void
+  SetModifyProbability(double var)
+  {
+    m_modifyProbability = var;
+  }
+  bool
+  GetFeasible()const
+  {
+    return m_feasible;
+  }
+  void
+  SetFeasible(bool var)
+  {
+    m_feasible = var;
+  }
+  void
+  ChangeFeasible()
+  {
+    m_feasible = not m_feasible;
+  }
 
 private:
   friend std::ostream& operator<< (std::ostream& os, const FaceMetric &metric);
@@ -200,12 +254,23 @@ private:
 
   Time m_realDelay;    ///< \brief real propagation delay to the producer, calculated based on NS-3 p2p link delays
   int m_bit;
+
+
+  //added by zfx, the following parameters are used to PINFORM forwarding;
+  double m_QVariable;//Q value
+  double m_probability;//P value
+  double m_modifyProbability;//modify P value
+  bool m_feasible; //the interface is feasible to forward data
+
 };
 
 /// @cond include_hidden
 class i_face {};
 class i_metric {};
 class i_nth {};
+//added by zfx
+class i_probability{};
+class i_qvalue{};
 /// @endcond
 
 
@@ -241,6 +306,41 @@ struct FaceMetricContainer
         >
       >,
 
+      //added by zfx, used to Pinform forwarding
+      boost::multi_index::ordered_non_unique<
+        boost::multi_index::tag<i_probability>,
+        boost::multi_index::composite_key<
+          FaceMetric,
+          boost::multi_index::const_mem_fun<FaceMetric,FaceMetric::Status,&FaceMetric::GetStatus>,
+          boost::multi_index::const_mem_fun<FaceMetric,double,&FaceMetric::GetModifyProbability>,
+          boost::multi_index::const_mem_fun<FaceMetric,int32_t,&FaceMetric::GetRoutingCost>
+        >,
+      boost::multi_index::composite_key_compare<
+        std::less<fib::FaceMetric::Status>, // status sorted by default
+        std::greater<double>,   // score sorted reverse     
+        
+        std::less<int32_t> // routingCost sorted by default
+       >
+      >,
+
+
+      boost::multi_index::ordered_non_unique<
+        boost::multi_index::tag<i_qvalue>,
+        boost::multi_index::composite_key<
+          FaceMetric,
+          boost::multi_index::const_mem_fun<FaceMetric,FaceMetric::Status,&FaceMetric::GetStatus>,
+          boost::multi_index::const_mem_fun<FaceMetric,double,&FaceMetric::GetQVariable>,
+          boost::multi_index::const_mem_fun<FaceMetric,int32_t,&FaceMetric::GetRoutingCost>
+        >,
+      boost::multi_index::composite_key_compare<
+        std::less<fib::FaceMetric::Status>, // status sorted by default
+        std::less<double>,   //      
+        
+        std::less<int32_t> // routingCost sorted by default
+       >
+      >,
+
+
       // To optimize nth candidate selection (sacrifice a little bit space to gain speed)
       boost::multi_index::random_access<
         boost::multi_index::tag<i_nth>
@@ -271,6 +371,15 @@ public:
   : m_fib (fib)
   , m_prefix (prefix)
   , m_needsProbing (false)
+  //added by zfx, the following parameters are used to PINFORM forwarding; 
+  , m_phase(0)// two phases, exploration phase or explloitation phase: 0 , 1 
+  , m_interestCountInThisPhase(0)
+  , m_QExpectInExplo(0.0)
+  , m_realQExpect(0.0)
+  //, m_Nr(10)
+  //, m_Nt(5000)
+  //, m_Sigema(0.05)
+  //, m_baseProbability(0.01)
   {
   }
 
@@ -278,9 +387,23 @@ public:
    * \brief Update status of FIB next hop
    * \param status Status to set on the FIB entry
    */
+  void
+  ChangePhase()
+  {
+    m_phase ^= 1;
+  }
+
   void UpdateStatus (Ptr<Face> face, FaceMetric::Status status);
 
   void UpdateBit (Ptr<Face> face, uint32_t bit);//added by zfx
+
+  void UpdateQVariable (Ptr<Face> face, double var);
+
+  void UpdateProbability (Ptr<Face> face, double var);
+
+  void UpdateModifyProbability (Ptr<Face> face, double var);
+
+  void UpdateFeasible (Ptr<Face> face, bool var);
   /**
    * \brief Add or update routing metric of FIB next hop
    *
@@ -347,6 +470,17 @@ public:
   FaceMetricContainer::type m_faces; ///< \brief Indexed list of faces
 
   bool m_needsProbing;      ///< \brief flag indicating that probing should be performed
+
+  
+  //added by zfx, the following parameters are used to PINFORM forwarding; 
+  int m_phase; // two phases, exploration phase or explloitation phase: 0 , 1
+  int  m_interestCountInThisPhase;// num of forwarded interests in this pahse
+  double m_QExpectInExplo;// expect Q value in exploration. In another word, the expect time from this node forwarding an Interest to getting the data in exploration. 
+  double m_realQExpect;// expect Q value in realtime.
+  //int m_Nr;//max num of forwarded Interest during exploration
+  //int m_Nt;//max num of forwarded Interest during explolitation
+  //float m_Sigema;//transimit phase from explolitation to exploration
+  //float m_baseProbability;//Gama, the Interest is only forwarded through the interface with the P value more than baseProbability.
 };
 
 std::ostream& operator<< (std::ostream& os, const Entry &entry);

@@ -73,6 +73,7 @@ Multipath::DoPropagateInterest (Ptr<Face> inFace,
   uint32_t path2;
   FwHopCountTag hopCountTag;
       if (origPacket->PeekPacketTag (hopCountTag)) path2 = hopCountTag.Get();
+  //just use multipath at the first hop, then use best route forwarding.
   if( path2 > 0)//consumer is hop 0 
 	{
 	return BestRouteDoPropagateInterest(inFace, header, origPacket, pitEntry);	
@@ -99,6 +100,7 @@ Multipath::DoPropagateInterest (Ptr<Face> inFace,
         metricFace_before=&metricFace;
         continue;
         }
+        //just forward to two faces;
       if (Flagm>2  || metricFace.GetStatus () == fib::FaceMetric::NDN_FIB_RED) break;
       if(Flagc &&  metricFace.GetBit()==metricFace_before->GetBit())
         {

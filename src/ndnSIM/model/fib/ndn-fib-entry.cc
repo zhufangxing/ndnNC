@@ -112,10 +112,62 @@ Entry::UpdateBit (Ptr<Face> face, uint32_t bit)
 
   FaceMetricByFace::type::iterator record = m_faces.get<i_face> ().find (face);
   NS_ASSERT_MSG (record != m_faces.get<i_face> ().end (),
-                 "Update status can be performed only on existing faces of CcxnFibEntry");
+                 "Update bit can be performed only on existing faces of CcxnFibEntry");
 
   m_faces.modify (record,
                   ll::bind (&FaceMetric::SetBit, ll::_1, bit));
+
+}
+
+void Entry::UpdateQVariable (Ptr<Face> face, double var)
+{
+  NS_LOG_FUNCTION (this << boost::cref(*face) << var);
+
+  FaceMetricByFace::type::iterator record = m_faces.get<i_face> ().find (face);
+  NS_ASSERT_MSG (record != m_faces.get<i_face> ().end (),
+                 "Update Qvariable can be performed only on existing faces of CcxnFibEntry");
+
+  m_faces.modify (record,
+                  ll::bind (&FaceMetric::SetQVariable, ll::_1, var));
+
+}
+
+void Entry::UpdateProbability (Ptr<Face> face, double var)
+{
+  NS_LOG_FUNCTION (this << boost::cref(*face) << var);
+
+  FaceMetricByFace::type::iterator record = m_faces.get<i_face> ().find (face);
+  NS_ASSERT_MSG (record != m_faces.get<i_face> ().end (),
+                 "Update Probability can be performed only on existing faces of CcxnFibEntry");
+
+  m_faces.modify (record,
+                  ll::bind (&FaceMetric::SetProbability, ll::_1, var));
+
+}
+
+void Entry::UpdateModifyProbability (Ptr<Face> face, double var)
+{
+  NS_LOG_FUNCTION (this << boost::cref(*face) << var);
+
+  FaceMetricByFace::type::iterator record = m_faces.get<i_face> ().find (face);
+  NS_ASSERT_MSG (record != m_faces.get<i_face> ().end (),
+                 "Update ModifyProbability can be performed only on existing faces of CcxnFibEntry");
+
+  m_faces.modify (record,
+                  ll::bind (&FaceMetric::SetModifyProbability, ll::_1, var));
+
+}
+
+void Entry::UpdateFeasible (Ptr<Face> face, bool var)
+{
+  NS_LOG_FUNCTION (this << boost::cref(*face) << var);
+
+  FaceMetricByFace::type::iterator record = m_faces.get<i_face> ().find (face);
+  NS_ASSERT_MSG (record != m_faces.get<i_face> ().end (),
+                 "Update Feasible can be performed only on existing faces of CcxnFibEntry");
+
+  m_faces.modify (record,
+                  ll::bind (&FaceMetric::SetFeasible, ll::_1, var));
 
 }
 

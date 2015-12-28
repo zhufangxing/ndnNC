@@ -38,6 +38,7 @@
 #include "ns3/string.h"
 
 #include "ns3/ndnSIM/utils/ndn-fw-hop-count-tag.h"
+ #include "ns3/ndnSIM/utils/ndn-fw-hop-time-tag.h"
 
 #include <boost/ref.hpp>
 #include <boost/foreach.hpp>
@@ -256,9 +257,17 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
       NS_ASSERT (contentObjectHeader != 0);
 
       FwHopCountTag hopCountTag;
-      if (origPacket->PeekPacketTag (hopCountTag))
-        {
+      // if (origPacket->PeekPacketTag (hopCountTag))
+      //   {
           contentObject->AddPacketTag (hopCountTag);
+        // }
+
+      // add for PINFOM forarding, 2015.12.24
+      FwHopTimeTag hopTimetag;
+      if(origPacket->PeekPacketTag (hopTimetag))
+        {
+          hopTimetag.Update(pitEntry->GetFibEntry()->m_QExpectInExplo);
+          contentObject->AddPacketTag (hopTimetag);
         }
 
       pitEntry->AddIncoming (inFace, header->GetCoef());
@@ -281,9 +290,17 @@ else{//without network coding
       NS_ASSERT (contentObjectHeader != 0);
 
       FwHopCountTag hopCountTag;
-      if (origPacket->PeekPacketTag (hopCountTag))
-        {
+      // if (origPacket->PeekPacketTag (hopCountTag))
+      //   {
           contentObject->AddPacketTag (hopCountTag);
+        // }
+
+        // add for PINFOM forarding, 2015.12.24
+      FwHopTimeTag hopTimetag;
+      if(origPacket->PeekPacketTag (hopTimetag))
+        {
+          hopTimetag.Update(pitEntry->GetFibEntry()->m_QExpectInExplo);
+          contentObject->AddPacketTag (hopTimetag);
         }
 
       pitEntry->AddIncoming (inFace, header->GetCoef());

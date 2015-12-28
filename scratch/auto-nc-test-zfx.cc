@@ -46,9 +46,9 @@ int main (int argc, char *argv[])
   //ccnxHelper.InstallAll ();
   // Installing applications
   ccnxHelper.SetPit ("ns3::ndn::pit::Lru","MaxSize", "1000");
-ccnxHelper.SetContentStore ("ns3::ndn::cs::LifetimeBasedGreedy::Lru","MaxSize","4000");  // ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Flooding");
-//  ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::BestRoute");
-  ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Multipath");
+ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize","4000");   //ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Pinform");
+  ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::BestRoute");
+  //ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Pinform");
   ccnxHelper.InstallAll ();
  
   // Installing global routing interface on all nodes
@@ -73,13 +73,21 @@ Client.SetPrefix("/ndn/vod/nc");
 Client.SetAttribute("Frequency", StringValue("200"));
 Client.SetAttribute("Randomize", StringValue ("uniform"));
 ApplicationContainer app0 = Client.Install (Node0);
+app0.Start(Seconds(0));
 ApplicationContainer app10 = Client.Install (Node10);
+app10.Start(Seconds(3));
 ApplicationContainer app20 = Client.Install (Node20);
+app20.Start(Seconds(6));
 ApplicationContainer app40 = Client.Install (Node40);
+app40.Start(Seconds(12));
 ApplicationContainer app50 = Client.Install (Node50);
+app50.Start(Seconds(15));
 ApplicationContainer app70 = Client.Install (Node70);
+app70.Start(Seconds(21));
 ApplicationContainer app80 = Client.Install (Node80);
+app80.Start(Seconds(24));
 ApplicationContainer app90 = Client.Install (Node90);
+app90.Start(Seconds(27));
  
   /*ndn::AppHelper producer("ns3::ndn::Producer");
   producer.SetPrefix("/ndn/vod/nc");
@@ -92,7 +100,7 @@ ApplicationContainer app90 = Client.Install (Node90);
   //ApplicationContainer app4 = producer.Install(node4);
   
   ndn::AppHelper consumerHelper ("NetworkCodingApp");
-consumerHelper.SetAttribute("Freshness", TimeValue (Seconds (10)));
+consumerHelper.SetAttribute("Freshness", TimeValue (Seconds (1)));
   //ApplicationContainer app1 = consumerHelper.Install (node1); 
   //ApplicationContainer app2 = consumerHelper.Install (node2);
   //ApplicationContainer app3 = consumerHelper.Install (node3);
