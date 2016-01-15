@@ -250,7 +250,7 @@ ForwardingStrategy::OnInterest (Ptr<Face> inFace,
 //std::cout <<"header_nc name"<<&header_nc.GetName()<<std::endl;
 //std::cout <<"header name"<<&header->GetName()<<std::endl;
 
-  //cs trace in Lookup, added by zfx
+  //cs trace in Lookup, added by zfx, contentObject and payload are similar, one can be modify, one is const
   boost::tie (contentObject, contentObjectHeader, payload) = m_contentStore->Lookup_nc (header, i==(blocksNum-1) && j==(9+blocksNum*2), coef_int);
   if (contentObject != 0 && !IsCoefSame(coef_int,contentObjectHeader->GetCoef()))
     {
@@ -398,9 +398,11 @@ if(nc=="nc"){
 
 	if(i==0){
           FwHopCountTag hopCountTag;
+          FwHopTimeTag hopTimetag;
 
           Ptr<Packet> payloadCopy = payload->Copy ();
           payloadCopy->RemovePacketTag (hopCountTag);
+          payloadCopy->RemovePacketTag (hopTimetag);
 
           // Optimistically add or update entry in the content store
           m_contentStore->Add (header, payloadCopy);
@@ -487,9 +489,10 @@ else{
       if (m_cacheUnsolicitedData || (m_cacheUnsolicitedDataFromApps && (inFace->GetFlags () | Face::APPLICATION)))
         {
           FwHopCountTag hopCountTag;
-
+          FwHopTimeTag hopTimetag;
           Ptr<Packet> payloadCopy = payload->Copy ();
           payloadCopy->RemovePacketTag (hopCountTag);
+          payloadCopy->RemovePacketTag(hopTimetag);
 
           // Optimistically add or update entry in the content store
           cached = m_contentStore->Add (header, payloadCopy);

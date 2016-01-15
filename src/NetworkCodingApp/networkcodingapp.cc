@@ -199,16 +199,23 @@ void NetworkCodingApp::OnInterest (const Ptr<const ndn::InterestHeader> &interes
      packet->AddTrailer (tailer);
  
      ns3::ndn::FwHopCountTag hopCountTag;
-     origPacket->RemovePacketTag(hopCountTag);
-     ns3::ndn::FwHopCountTag hopCountTag2;     
-     packet->AddPacketTag (hopCountTag2);  
+     //origPacket->RemovePacketTag(hopCountTag);
+     if(origPacket->RemovePacketTag(hopCountTag))
+     {
+      ns3::ndn::FwHopCountTag hopCountTag2;     
+      packet->AddPacketTag (hopCountTag2);  
+     }
+   
 
      //add for INFORM forwarding
      ns3::ndn::FwHopTimeTag hopTimeTag;
-     origPacket->RemovePacketTag(hopTimeTag);
-     ns3::ndn::FwHopTimeTag hopTimeTag2;
-     packet->AddPacketTag (hopTimeTag2);
+     if(origPacket->RemovePacketTag(hopTimeTag))
+     {
+      ns3::ndn::FwHopTimeTag hopTimeTag2;
+      packet->AddPacketTag (hopTimeTag2);
      
+     }
+
 
      NS_LOG_DEBUG ("[" << Simulator::Now() << "] "<<" " << "Sending ContentObject packet for " << data.GetName ());
      // Call trace (for logging purposes)

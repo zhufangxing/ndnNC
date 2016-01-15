@@ -56,6 +56,7 @@ namespace fib {
 class FaceMetric
 {
 public:
+
   /**
    * @brief Color codes for FIB face status
    */
@@ -78,7 +79,7 @@ public:
     , m_realDelay (Seconds (0))
     , m_bit (0)//added by zfx , for multipath forwarding
     //added by zfx, the following parameters are used to PINFORM forwarding;
-    , m_QVariable(0.0)
+    , m_QVariable(0x7fffff)
     , m_probability(0.0)
     , m_modifyProbability(0.0)
     , m_feasible(true)
@@ -203,7 +204,7 @@ public:
   double 
   GetProbability()const
   {
-    return m_QVariable;
+    return m_probability;
   }
   void
   SetProbability(double var)
@@ -372,7 +373,7 @@ public:
   , m_prefix (prefix)
   , m_needsProbing (false)
   //added by zfx, the following parameters are used to PINFORM forwarding; 
-  , m_phase(0)// two phases, exploration phase or explloitation phase: 0 , 1 
+  , m_phase(1)// two phases, exploration phase or explloitation phase: 0 , 1 
   , m_interestCountInThisPhase(0)
   , m_QExpectInExplo(0.0)
   , m_realQExpect(0.0)

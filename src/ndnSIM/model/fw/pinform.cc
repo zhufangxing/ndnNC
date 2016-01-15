@@ -12,8 +12,10 @@
 #include "ns3/ndn-pit.h"
 #include "ns3/ndn-pit-entry.h"
 #include "ns3/ndnSIM/utils/ndn-fw-hop-time-tag.h"
+ #include "ns3/ndnSIM/utils/ndn-fw-hop-count-tag.h"
 #include "ns3/random-variable.h"
 #include "ns3/ndn-content-object.h"
+#include "pinform-parameter.h"
 
 #include "ns3/assert.h"
 #include "ns3/log.h"
@@ -42,8 +44,10 @@ Pinform::GetLogName ()
 
 
 const int LARGEINT = 0x7fffff;
-const int m_maxInterest[2] = {10,5000};
-const double m_QLearningPar = 0.5,m_Sigema = 0.05, m_baseProbability = 0.01;
+const int m_maxInterest[2] = {0,5000};
+// Note the parameters, such as m_QLearningPar/m_Sigema/m_baseProbability/m_factor, are defined in the file "pinform-parameter.h".
+// const double m_QLearningPar = 0.5,m_Sigema = 0.15, m_baseProbability = 0.2;
+// const float m_factor = 0.2;
 
 
 struct FaceMetricByFace
@@ -86,31 +90,51 @@ Pinform::DoPropagateInterest (Ptr<Face> inFace,
                                 Ptr<pit::Entry> pitEntry)
 {
 
-
+  static double Interestcount = 0.0;
+  static double propaInterest = 0.0;//, propaIntInExplo = 0.0;
+  Interestcount += 1;
   NS_LOG_FUNCTION (this << header->GetName ());
 
   int propagatedCount = 0;
   UniformVariable rand (0,std::numeric_limits<uint32_t>::max ());
-  int randInt = rand.GetValue ();
+  uint32_t randInt = rand.GetValue ();
   double randNum = (randInt%10000)/10000.0;
   double sum = 0.0;
+
+  //test
+  //selection probabilitiy assosicate with hops
+  FwHopCountTag hopCountTag;
+  origPacket->PeekPacketTag(hopCountTag);
+  int hops = hopCountTag.Get();
+  float factor = 1-hops*m_factor;
+  if(factor<0) factor = 0;
+  //cout<<"factor:"<<factor<<endl;
+  randNum *= factor;
+  //end test
 
   BOOST_FOREACH (const fib::FaceMetric &metricFace, pitEntry->GetFibEntry ()->m_faces.get<fib::i_probability> ())
     {
       if (metricFace.GetStatus () == fib::FaceMetric::NDN_FIB_RED) break;
       sum += metricFace.GetModifyProbability();
+      //cout<<"DoPropagateInterest"<<sum<<" "<<randNum<<" "<<randInt<<endl;
       if (sum>= randNum) {
         if (!TrySendOutInterest (inFace, metricFace.GetFace (), header, origPacket, pitEntry))
         {
           propagatedCount+=BestRouteDoPropagateInterest(inFace, header, origPacket, pitEntry);
         }
+        else
+          propagatedCount+=1;
         break;
       }
     }
 
+    if(propagatedCount == 0) ;//BestRouteDoPropagateInterest(inFace, header, origPacket, pitEntry);//cout<<"fail propagatedCount"<<propaInterest/Interestcount<<endl;
+    else propaInterest+=1;
   // exploration phase, random choose a face to exploration
   if(pitEntry->GetFibEntry ()->m_phase == 0)
   {
+    // propaIntInExplo += 1;
+    //cout<<"exploration"<<propaIntInExplo/Interestcount<<endl;
     int count =0;
     BOOST_FOREACH (const fib::FaceMetric &metricFace, pitEntry->GetFibEntry ()->m_faces.get<fib::i_qvalue> ())
     {
@@ -189,11 +213,11 @@ void Pinform::OnInterest (Ptr<Face> inFace,
 
   //first start ? if yes, init Q value, P value
   FaceMetricByModifyP::type::iterator metricFace = pitEntry->GetFibEntry ()->m_faces.get<fib::i_probability> ().begin();
-  if(metricFace != pitEntry->GetFibEntry ()->m_faces.get<fib::i_probability> ().end())
+  if(metricFace == pitEntry->GetFibEntry ()->m_faces.get<fib::i_probability> ().end())
   {
     //do nothing
   }
-  else if(metricFace->GetModifyProbability() == 0)
+  else if( metricFace->GetQVariable() == LARGEINT)
   {
     initValue(pitEntry->GetFibEntry());
   }
@@ -210,6 +234,7 @@ void Pinform::OnInterest (Ptr<Face> inFace,
       }
     }
     else{
+      NS_ASSERT_MSG(false, "wrong phase");
       //phase only could be 0 or 1, in wrong phase period, reset the phase
       pitEntry->GetFibEntry ()->m_phase = 0;
       pitEntry->GetFibEntry ()->m_interestCountInThisPhase = 0;
@@ -258,6 +283,7 @@ void  Pinform::OnData (Ptr<Face> face,
 
     // a exploration data ?
     if(record->GetFeasible()) // a data not in exploration phase
+    // if(false)
     {
       double sumCountPerSec =0.0;
       BOOST_FOREACH (const fib::FaceMetric &metricFace, pitEntry->GetFibEntry ()->m_faces.get<fib::i_qvalue> ())
@@ -266,7 +292,7 @@ void  Pinform::OnData (Ptr<Face> face,
           break;
 
         // init Q value
-        if(metricFace.GetQVariable() == 0) {
+        if(metricFace.GetQVariable() == LARGEINT) {
           if(metricFace.GetRoutingCost() != 0)
             pitEntry->GetFibEntry ()->UpdateQVariable(metricFace.GetFace(), metricFace.GetRoutingCost());
           else pitEntry->GetFibEntry ()->UpdateQVariable(metricFace.GetFace(), LARGEINT);
@@ -286,7 +312,7 @@ void  Pinform::OnData (Ptr<Face> face,
         {
           if (metricFace->GetStatus () == fib::FaceMetric::NDN_FIB_RED || !metricFace->GetFeasible()) // all non-read faces are in front
             break;
-          pitEntry->GetFibEntry()->UpdateProbability(metricFace->GetFace(), 0.0);
+          pitEntry->GetFibEntry()->UpdateModifyProbability(metricFace->GetFace(), 0.0);
           // m_faces.modify (metricFace,
           //             ll::bind (&fib::FaceMetric::SetProbability, ll::_1, 0.0));
         }
@@ -300,10 +326,11 @@ void  Pinform::OnData (Ptr<Face> face,
           break;
         pitEntry->GetFibEntry ()->UpdateModifyProbability(metricFace->GetFace(), (1/metricFace->GetQVariable())/sumCountPerSec);
         realQExpect += metricFace->GetQVariable() * metricFace->GetModifyProbability();
+        // cout<<"1GetModifyProbability"<<metricFace->GetQVariable()<<" "<<metricFace->GetProbability()<<" "<<metricFace->GetModifyProbability()<<endl;        
       }
 
       // whether to update QExpect value
-      if(pitEntry->GetFibEntry ()->m_phase == 0 || pitEntry->GetFibEntry ()->m_QExpectInExplo == 0 || abs(pitEntry->GetFibEntry ()->m_QExpectInExplo - realQExpect)/pitEntry->GetFibEntry ()->m_QExpectInExplo > m_Sigema)
+      if(pitEntry->GetFibEntry ()->m_phase == 0 || pitEntry->GetFibEntry ()->m_QExpectInExplo == 0 || abs(pitEntry->GetFibEntry ()->m_QExpectInExplo - realQExpect)/pitEntry->GetFibEntry ()->m_QExpectInExplo > m_Sigema )
       {
         pitEntry->GetFibEntry ()->m_QExpectInExplo = realQExpect;
         if(pitEntry->GetFibEntry ()->m_phase == 1)
@@ -329,7 +356,7 @@ void  Pinform::OnData (Ptr<Face> face,
           break;
 
         // init Q value
-        if(metricFace->GetQVariable() == 0) {
+        if(metricFace->GetQVariable() == 0 || metricFace->GetQVariable() == LARGEINT) {
           if(metricFace->GetRoutingCost() != 0)
             pitEntry->GetFibEntry ()->UpdateQVariable(metricFace->GetFace(), metricFace->GetRoutingCost());
           else pitEntry->GetFibEntry ()->UpdateQVariable(metricFace->GetFace(), LARGEINT);
@@ -359,7 +386,7 @@ void  Pinform::OnData (Ptr<Face> face,
               metricFace != pitEntry->GetFibEntry ()->m_faces.get<fib::i_qvalue> ().end();
               metricFace ++)
         {
-          if (metricFace->GetStatus () == fib::FaceMetric::NDN_FIB_RED || !metricFace->GetFeasible()) // all non-read faces are in front
+          if (metricFace->GetStatus () == fib::FaceMetric::NDN_FIB_RED) // all non-read faces are in front
             break;
           pitEntry->GetFibEntry()->UpdateProbability(metricFace->GetFace(), (1/metricFace->GetQVariable())/sumCountPerSec);
           if(metricFace->GetProbability() > m_baseProbability)
@@ -368,7 +395,10 @@ void  Pinform::OnData (Ptr<Face> face,
             sumCountPerSec2 += 1/metricFace->GetQVariable();
           }
           else
+          {
             pitEntry->GetFibEntry()->UpdateFeasible(metricFace->GetFace(), false);
+            pitEntry->GetFibEntry ()->UpdateModifyProbability(metricFace->GetFace(),0.0);
+          }
         } 
 
         // wait to deal with, if sumCountPerSce2 == 0
@@ -382,6 +412,7 @@ void  Pinform::OnData (Ptr<Face> face,
             break;
           pitEntry->GetFibEntry ()->UpdateModifyProbability(metricFace->GetFace(), (1/metricFace->GetQVariable())/sumCountPerSec2);
           realQExpect += metricFace->GetQVariable() * metricFace->GetModifyProbability();
+          //cout<<"3GetModifyProbability"<<metricFace->GetQVariable()<<" "<<metricFace->GetProbability()<<" "<<metricFace->GetModifyProbability()<<endl;        
         } 
 
         // update Q expect value
@@ -391,16 +422,21 @@ void  Pinform::OnData (Ptr<Face> face,
     }//else -- exploration
 
     Ptr<Packet> newPacket = origPacket->Copy();
-    newPacket->RemovePacketTag (hopTimeTag);
-    hopTimeTag.Update(realQExpect);
-    newPacket->AddPacketTag(hopTimeTag);
+    //newPacket->RemovePacketTag (hopTimeTag);
+    NS_ASSERT_MSG (newPacket->RemovePacketTag (hopTimeTag), "fail remove hopTimeTag");
+
+    //hopTimeTag.Update(realQExpect);
+    FwHopTimeTag hopTimeTag2(realQExpect);
+    newPacket->AddPacketTag(hopTimeTag2);
     super::OnData(face, header, payload, newPacket);
   }// endif --- get a hopTimeTag
 
   else{
-    FwHopTimeTag hopTimeTag(pitEntry->GetFibEntry()->m_QExpectInExplo);
-    origPacket->AddPacketTag(hopTimeTag);
-    super::OnData(face, header, payload, origPacket);
+    Ptr<Packet> newPacket = origPacket->Copy();
+    newPacket->RemovePacketTag (hopTimeTag);
+    FwHopTimeTag hopTimeTag2(pitEntry->GetFibEntry()->m_QExpectInExplo);
+    newPacket->AddPacketTag(hopTimeTag2);
+    super::OnData(face, header, payload, newPacket);
   }
 
 }
@@ -408,6 +444,7 @@ void  Pinform::OnData (Ptr<Face> face,
 void
 Pinform::initValue(Ptr<fib::Entry> fibEntry)
 {
+  //out<<"init"<<endl;
   double sumCountPerSec = 0.0;
   double sumCountPerSec2 = 0.0;
   double realQExpect = 0.0;
@@ -420,6 +457,7 @@ Pinform::initValue(Ptr<fib::Entry> fibEntry)
           else
             fibEntry->UpdateQVariable(metricFace->GetFace(), metricFace->GetRoutingCost());
           sumCountPerSec += 1/metricFace->GetQVariable();
+          //cout<<"GetQVariable"<<metricFace->GetQVariable()<<" "<<metricFace->GetRoutingCost()<<endl;
         }
   for (FaceMetricByQValue::type::iterator metricFace = fibEntry->m_faces.get<fib::i_qvalue> ().begin();
               metricFace != fibEntry->m_faces.get<fib::i_qvalue> ().end();
@@ -427,7 +465,7 @@ Pinform::initValue(Ptr<fib::Entry> fibEntry)
         {
           fibEntry->UpdateProbability(metricFace->GetFace(), (1/metricFace->GetQVariable())/sumCountPerSec);
           if(metricFace->GetProbability()>m_baseProbability)
-            sumCountPerSec2 += metricFace->GetQVariable();
+            sumCountPerSec2 += 1/metricFace->GetQVariable();
         }
   for (FaceMetricByQValue::type::iterator metricFace = fibEntry ->m_faces.get<fib::i_qvalue> ().begin();
               metricFace != fibEntry ->m_faces.get<fib::i_qvalue> ().end();
@@ -444,8 +482,9 @@ Pinform::initValue(Ptr<fib::Entry> fibEntry)
             fibEntry->UpdateFeasible(metricFace->GetFace(), false);
             fibEntry->UpdateModifyProbability(metricFace->GetFace(), 0.0);
           }
+          // cout<<"2GetModifyProbability"<<metricFace->GetQVariable()<<" "<<metricFace->GetProbability()<<" "<<metricFace->GetModifyProbability()<<endl;
         }
-  fibEntry->m_phase = 0;
+  fibEntry->m_phase = 1;
   fibEntry->m_interestCountInThisPhase = 0;
   fibEntry->m_QExpectInExplo = realQExpect;
 

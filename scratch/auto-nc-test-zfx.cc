@@ -46,9 +46,9 @@ int main (int argc, char *argv[])
   //ccnxHelper.InstallAll ();
   // Installing applications
   ccnxHelper.SetPit ("ns3::ndn::pit::Lru","MaxSize", "1000");
-ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize","4000");   //ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Pinform");
-  ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::BestRoute");
-  //ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Pinform");
+ccnxHelper.SetContentStore ("ns3::ndn::cs::Lru","MaxSize","4000");   ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Pinform");
+  //ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::BestRoute");
+  //ccnxHelper.SetForwardingStrategy ("ns3::ndn::fw::Multipath");
   ccnxHelper.InstallAll ();
  
   // Installing global routing interface on all nodes
@@ -70,7 +70,7 @@ ccnxGlobalRoutingHelper.AddOrigins ("/ndn/vod/nc", Node60);
 ndn::AppHelper Client("ns3::ndn::ConsumerCbrNC");
 //ndn::AppHelper Client("ns3::ndn::ConsumerZipfMandelbrot");
 Client.SetPrefix("/ndn/vod/nc");
-Client.SetAttribute("Frequency", StringValue("200"));
+Client.SetAttribute("Frequency", StringValue("300"));
 Client.SetAttribute("Randomize", StringValue ("uniform"));
 ApplicationContainer app0 = Client.Install (Node0);
 app0.Start(Seconds(0));
@@ -100,7 +100,7 @@ app90.Start(Seconds(27));
   //ApplicationContainer app4 = producer.Install(node4);
   
   ndn::AppHelper consumerHelper ("NetworkCodingApp");
-consumerHelper.SetAttribute("Freshness", TimeValue (Seconds (1)));
+consumerHelper.SetAttribute("Freshness", TimeValue (Seconds (4)));
   //ApplicationContainer app1 = consumerHelper.Install (node1); 
   //ApplicationContainer app2 = consumerHelper.Install (node2);
   //ApplicationContainer app3 = consumerHelper.Install (node3);
