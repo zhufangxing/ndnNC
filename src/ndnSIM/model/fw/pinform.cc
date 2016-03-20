@@ -283,7 +283,8 @@ void  Pinform::OnData (Ptr<Face> face,
 
     // a exploration data ?
     if(record->GetFeasible()) // a data not in exploration phase
-    // if(false)
+    //// if(false)
+    //if(true)
     {
       double sumCountPerSec =0.0;
       BOOST_FOREACH (const fib::FaceMetric &metricFace, pitEntry->GetFibEntry ()->m_faces.get<fib::i_qvalue> ())

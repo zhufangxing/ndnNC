@@ -70,7 +70,7 @@ ccnxGlobalRoutingHelper.AddOrigins ("/ndn/vod/nc", Node60);
 ndn::AppHelper Client("ns3::ndn::ConsumerCbrNC");
 //ndn::AppHelper Client("ns3::ndn::ConsumerZipfMandelbrot");
 Client.SetPrefix("/ndn/vod/nc");
-Client.SetAttribute("Frequency", StringValue("300"));
+Client.SetAttribute("Frequency", StringValue("200"));
 Client.SetAttribute("Randomize", StringValue ("uniform"));
 ApplicationContainer app0 = Client.Install (Node0);
 app0.Start(Seconds(0));

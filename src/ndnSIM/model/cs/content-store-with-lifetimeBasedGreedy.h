@@ -223,6 +223,9 @@ private:
   CleanExpired ();
 
   inline void
+  CleanOneExpired();
+
+  inline void
   RescheduleCleaning ();
 
 private:
@@ -262,20 +265,22 @@ template<class Policy>
 inline bool
 ContentStoreWithLifetimeBasedGreedy< Policy >::Add (Ptr<const ContentObject> header, Ptr<const Packet> packet)
 {
-  // if (!m_cleanEvent.IsRunning ())
-  //   {
-  //     CleanExpired ();
-  //   }
+  if (!m_cleanEvent.IsRunning ())
+    {
+      CleanOneExpired ();
+     }
+     
+     
   if (!super::isFull())
   {
     bool ok = super::Add (header, packet);
     if (!ok) return false;
 
     NS_LOG_DEBUG (header->GetName () << " added to cache");  
-    RescheduleCleaning ();
+    //RescheduleCleaning ();
     return true;    
   }
-  RescheduleCleaning ();
+  //RescheduleCleaning ();
   return false;  
 }
 
@@ -298,7 +303,7 @@ ContentStoreWithLifetimeBasedGreedy< Policy >::RescheduleCleaning ()
             }
 
           // NS_LOG_DEBUG ("Next event in: " << (nextStateTime - Now ()).ToDouble (Time::S) << "s");
-          m_cleanEvent = Simulator::Schedule (nextStateTime - Now (), &ContentStoreWithLifetimeBasedGreedy< Policy >::CleanExpired, this);
+          m_cleanEvent = Simulator::Schedule (nextStateTime - Now (), &ContentStoreWithLifetimeBasedGreedy< Policy >::CleanOneExpired, this);
           m_scheduledCleaningTime = nextStateTime;
         }
     }
@@ -337,6 +342,36 @@ ContentStoreWithLifetimeBasedGreedy< Policy >::CleanExpired ()
 
   m_scheduledCleaningTime = Time ();
   RescheduleCleaning ();
+}
+
+template<class Policy>
+inline void
+ContentStoreWithLifetimeBasedGreedy< Policy >::CleanOneExpired ()
+{
+
+  if (!super::isFull())
+    return;
+
+  freshness_policy_container &freshness = this->getPolicy ().template get<freshness_policy_container> ();
+
+  // NS_LOG_LOGIC (">> Cleaning: Total number of items:" << this->getPolicy ().size () << ", items with freshness: " << freshness.size ());
+  Time now = Simulator::Now ();
+
+  if (!freshness.empty ())
+    {
+      typename freshness_policy_container::iterator entry = freshness.begin ();
+
+      if (freshness_policy_container::policy_base::get_freshness (&(*entry)) <= now) // is the record stale?
+        {
+          //cout<<"erase entry now .."<<std::endl;
+          super::erase (&(*entry));
+        }
+     
+    }
+  // NS_LOG_LOGIC ("<< Cleaning: Total number of items:" << this->getPolicy ().size () << ", items with freshness: " << freshness.size ());
+
+  // m_scheduledCleaningTime = Time ();
+  // RescheduleCleaning ();
 }
 
 template<class Policy>
